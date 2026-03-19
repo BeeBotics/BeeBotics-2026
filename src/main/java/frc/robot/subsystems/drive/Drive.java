@@ -25,12 +25,14 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -42,11 +44,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.LimelightHelpers;
 import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.DoubleSupplier;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -72,6 +74,20 @@ public class Drive extends SubsystemBase {
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
 
   private final Field2d field2d = new Field2d();
+
+  // The "Shot Map" - Key is Distance (meters), Value is RPM
+  private final InterpolatingDoubleTreeMap shotMap = new InterpolatingDoubleTreeMap();
+
+  public void setupShotMap() {
+    // Format: shotMap.put(Distance_Meters, Target_RPM);
+    shotMap.put(0.0, 0.0);
+    shotMap.put(1.0, 4500.0); // Close
+    shotMap.put(2.0, 4750.0); 
+    shotMap.put(3.0, 5000.0);
+    shotMap.put(4.0, 6250.0);
+    shotMap.put(5.0, 6500.0);
+    shotMap.put(6.0, 6750.0);
+  }
 
   public Drive(
       GyroIO gyroIO,
@@ -322,13 +338,20 @@ public class Drive extends SubsystemBase {
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
   }
 
-  /** Adds a new timestamped vision measurement. */
+  /** Adds a new timestamped vision measurement to the pose estimator. */
   public void addVisionMeasurement(
       Pose2d visionRobotPoseMeters,
       double timestampSeconds,
       Matrix<N3, N1> visionMeasurementStdDevs) {
-    poseEstimator.addVisionMeasurement(
-        visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+
+    // CRITICAL: You must lock the thread before updating the estimator
+    odometryLock.lock();
+    try {
+      poseEstimator.addVisionMeasurement(
+          visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+    } finally {
+      odometryLock.unlock();
+    }
   }
 
   /** Returns the maximum linear speed in meters per sec. */
@@ -340,41 +363,42 @@ public class Drive extends SubsystemBase {
   public double getMaxAngularSpeedRadPerSec() {
     return maxSpeedMetersPerSec / driveBaseRadius;
   }
-  
-private static final Translation2d HUB_CENTER = new Translation2d(4.6, 4.0);
 
-public double getHubDistance() {
-    return getPose().getTranslation().getDistance(HUB_CENTER);
-}
+  public Command autoAimDrive(
+      DoubleSupplier xSupplier, DoubleSupplier ySupplier, Translation2d targetTranslation) {
 
-/** * Returns the angle (in Radians) the robot needs to face to look at the Hub.
- */
-public Rotation2d getAngleToHub() {
-    Translation2d delta = HUB_CENTER.minus(getPose().getTranslation());
-    // atan2(y, x) is the industry standard for coordinate geometry
-    return new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
-}
-  public Command autoAlignDrive(DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
-    // PID Constants: P=5.0 is a good starting point for radians, adjust if it shakes
+    // Create a local PID controller for rotation
+    // P=5.0 is a typical starting point for swerve rotation; adjust if it oscillates or is
+    // sluggish.
     PIDController thetaController = new PIDController(5.0, 0, 0);
     thetaController.enableContinuousInput(-Math.PI, Math.PI); // Essential for circular wrap-around
+    thetaController.setTolerance(Units.degreesToRadians(1.0)); // 1 degree tolerance
 
-    return run(() -> {
-        double targetRotation = getAngleToHub().getRadians();
-        double currentRotation = getPose().getRotation().getRadians();
+    return run(
+        () -> {
+          // 1. Calculate the rotation required to face the target
+          Translation2d currentTranslation = getPose().getTranslation();
+          Translation2d delta = targetTranslation.minus(currentTranslation);
 
-        // Calculate rotation speed based on error
-        double rotationOutput = thetaController.calculate(currentRotation, targetRotation);
+          // Use atan2 to get the angle from the robot to the target
+          Rotation2d targetRotation = new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
 
-        // Drive using your existing runVelocity method
-        runVelocity(
-            ChassisSpeeds.fromFieldRelativeSpeeds(
-                xSupplier.getAsDouble(),
-                ySupplier.getAsDouble(),
-                rotationOutput,
-                getRotation()
-            )
-        );
-    });
-}
+          // 2. Calculate the rotation speed using PID
+          double rotationOutput =
+              thetaController.calculate(
+                  getPose().getRotation().getRadians(), targetRotation.getRadians());
+
+          // 3. Convert supplier values and rotation to ChassisSpeeds
+          runVelocity(
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  xSupplier.getAsDouble(), ySupplier.getAsDouble(), rotationOutput, getRotation()));
+        });
+  }
+
+  public double getMapRPM(Translation2d target) {
+    double distance = getPose().getTranslation().getDistance(target);
+    
+    // .get() automatically interpolates (calculates the in-between value)
+    return shotMap.get(distance);
+  }
 }

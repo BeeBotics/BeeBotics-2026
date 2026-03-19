@@ -12,6 +12,8 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -36,10 +38,9 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
-import frc.robot.util.firecontrol.ProjectileSimulator;
-import frc.robot.util.firecontrol.ShotCalculator;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -51,7 +52,6 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  private final GyroIONavX gyro = new GyroIONavX();
 
   private final ShooterSubsystem m_shooter = new ShooterSubsystem();
   private final IntakeRotationSubsystem m_intakeRotation = new IntakeRotationSubsystem();
@@ -78,6 +78,11 @@ public class RobotContainer {
                 new ModuleIOSpark(1),
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3));
+
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOLimelight(VisionConstants.camera0Name, drive::getRotation));
         break;
 
       case SIM:
@@ -89,6 +94,10 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOLimelight(VisionConstants.camera0Name, drive::getRotation));
         break;
 
       default:
@@ -100,22 +109,11 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        break;
-    }
-    switch (Constants.currentMode) {
-      case REAL:
-        // Real robot, instantiate hardware IO implementations
-        vision =
-            new Vision(
-                drive::addVisionMeasurement,
-                new VisionIOLimelight("", drive::getRotation));
-        break;
-      default:
-        // Replayed robot, disable IO implementations
-        // (Use same number of dummy implementations as the real robot)
+
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
         break;
     }
+
     // Declare Named Commands
     NamedCommands.registerCommand(
         "Far Spinup",
@@ -191,13 +189,19 @@ public class RobotContainer {
     //             () -> -controller.getLeftX(),
     //             () -> -(LimelightHelpers.getTX("") + 8) * 0.04));
 
-// In RobotContainer.java
-controller.rightBumper().whileTrue(
-    drive.autoAlignDrive(
-        () -> -controller.getLeftY() * 4, // Forward/Back
-        () -> -controller.getLeftX() * 4  // Left/Right strafe
-    )
-);
+    // Define your targets (e.g., Center of the Speaker)
+    final Translation2d BLUE_HUB = new Translation2d(4.6, 4);
+    final Translation2d RED_HUB = new Translation2d(16.54 - 4.6, 4);
+
+    controller
+        .rightBumper()
+        .whileTrue(
+            drive.autoAimDrive(
+                () -> -controller.getLeftY() * drive.getMaxLinearSpeedMetersPerSec(),
+                () -> -controller.getLeftX() * drive.getMaxLinearSpeedMetersPerSec(),
+                DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
+                    ? BLUE_HUB
+                    : RED_HUB));
 
     // Switch to X pattern when X button is pressed
     // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
@@ -216,7 +220,8 @@ controller.rightBumper().whileTrue(
     controller
         .x()
         .whileTrue(
-            new ShooterCommand(m_shooter, 4500) // 4500
+            new ShooterCommand(m_shooter, 
+            drive.getMapRPM(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red? BLUE_HUB : RED_HUB)) // 4500 if not using shotmap or auto align
                 .alongWith(new IntakeRollerCommand(m_intakeRoller, 0.2)));
 
     controller
