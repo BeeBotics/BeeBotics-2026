@@ -1,0 +1,59 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.079,
+        "y": 0.932
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.9098433734939757,
+        "y": 0.25401204819277157
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.1444457831325305,
+        "y": 0.932
+      },
+      "prevControl": {
+        "x": 6.718265060240964,
+        "y": 0.5381325301204825
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.21825726141078625,
+      "rotationDegrees": 0.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 270.0,
+    "maxAngularAcceleration": 360.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 3.0774677139073794
+  },
+  "reversed": false,
+  "folder": "Starry Paths",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 62.745000000000005
+  },
+  "useDefaultConstraints": true
+}

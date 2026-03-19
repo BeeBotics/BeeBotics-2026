@@ -1,0 +1,100 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 4.414279600570612,
+        "y": 0.48333808844507875
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.575035663338086,
+        "y": 0.5480313837375184
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.173937232524963,
+        "y": 0.48333808844507875
+      },
+      "prevControl": {
+        "x": 5.173937232524963,
+        "y": 0.48333808844507886
+      },
+      "nextControl": {
+        "x": 7.173937232524965,
+        "y": 0.48333808844507875
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.9502567760342355,
+        "y": 1.479614835948646
+      },
+      "prevControl": {
+        "x": 6.933024967899241,
+        "y": 0.8851174552913726
+      },
+      "nextControl": {
+        "x": 6.976134094151213,
+        "y": 2.372382310984309
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.95,
+        "y": 3.4333523537803137
+      },
+      "prevControl": {
+        "x": 7.156087731811698,
+        "y": 2.3335663338088444
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 1.6934503713706932,
+      "maxWaypointRelativePos": 3.0,
+      "constraints": {
+        "maxVelocity": 1.5,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 270.0,
+        "maxAngularAcceleration": 360.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 270.0,
+    "maxAngularAcceleration": 360.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 25.821
+  },
+  "reversed": false,
+  "folder": "Starry Paths",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": true
+}

@@ -1,0 +1,75 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.83,
+        "y": 4.003
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.251569186875057,
+        "y": -0.2282881597748876
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.543666191155491,
+        "y": 0.7550499286733237
+      },
+      "prevControl": {
+        "x": 6.031611982881596,
+        "y": 0.8068045649072757
+      },
+      "nextControl": {
+        "x": 3.8582097266118165,
+        "y": 0.7312079646891957
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.082,
+        "y": 1.648
+      },
+      "prevControl": {
+        "x": 2.124540991480119,
+        "y": 0.9234327646268359
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.9339019189765454,
+      "rotationDegrees": 0.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 270.0,
+    "maxAngularAcceleration": 360.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 62.62957494674485
+  },
+  "reversed": false,
+  "folder": "Skyp's Right Trench Paths",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 90.0
+  },
+  "useDefaultConstraints": true
+}

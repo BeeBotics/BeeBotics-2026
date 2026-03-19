@@ -1,0 +1,92 @@
+package frc.robot.subsystems;
+
+import com.revrobotics.PersistMode;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.ResetMode;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+public class ShooterSubsystem extends SubsystemBase {
+  private final SparkMax leadingShooterMotor =
+      new SparkMax(13, MotorType.kBrushless); // Set the correct canID;
+  private final SparkMax followingShooterMotor = new SparkMax(14, MotorType.kBrushless);
+
+  private SparkClosedLoopController flywheelController =
+      leadingShooterMotor.getClosedLoopController();
+
+  private final RelativeEncoder leadingShooterEncoder;
+
+  private final PIDController pid;
+
+  public ShooterSubsystem() {
+
+    SparkMaxConfig leadingMotorConfig = new SparkMaxConfig();
+    SparkMaxConfig followingMotorConfig = new SparkMaxConfig();
+
+    leadingMotorConfig
+        .smartCurrentLimit(60)
+        .idleMode(IdleMode.kCoast)
+        .inverted(true)
+        .closedLoop
+        .p(0.0003)
+        .i(0)
+        .d(0)
+        .maxMotion
+        // Set MAXMotion parameters for MAXMotion Velocity control
+        .cruiseVelocity(5000)
+        .maxAcceleration(20000)
+        .allowedProfileError(1);
+    ;
+
+    followingMotorConfig
+        .smartCurrentLimit(60)
+        .idleMode(IdleMode.kCoast)
+        .follow(leadingShooterMotor, true);
+
+    leadingShooterMotor.configure(
+        leadingMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    followingShooterMotor.configure(
+        followingMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    leadingShooterEncoder = leadingShooterMotor.getEncoder();
+
+    pid = new PIDController(.0001, 0, 0); // Unused currently
+  }
+
+  public void setTargetVelocity(double targetRPM) {
+    flywheelController.setSetpoint(
+        targetRPM, ControlType.kMAXMotionVelocityControl, ClosedLoopSlot.kSlot0);
+  }
+
+  public void setTargetPower(double targetPower) {
+    leadingShooterMotor.set(targetPower);
+  }
+
+  // Returns arm Rotation
+  public double getSpeed() {
+    return leadingShooterEncoder.getVelocity();
+  }
+
+  public void setSpeed(double targetSpeed) {
+    double output = pid.calculate(getSpeed(), targetSpeed);
+    leadingShooterMotor.set(output);
+  }
+
+  @Override
+  public void periodic() {
+    // This method will be called once per scheduler run
+    // Good place to update SmartDashboard values if needed
+    // double pidOutput = pid.calculate(getSpeed());
+    // leadingShooterMotor.set(pidOutput);
+    SmartDashboard.putNumber("Speed", getSpeed());
+    SmartDashboard.putNumber("Shooter Voltage", leadingShooterMotor.getAppliedOutput());
+  }
+}
