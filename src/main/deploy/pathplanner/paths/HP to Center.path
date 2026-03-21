@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.0,
-        "y": 7.0
+        "x": 0.4,
+        "y": 0.6
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.165774119879703,
-        "y": 5.841713947678166
+        "x": 0.9109269688963382,
+        "y": 0.4998622402017343
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.0039657631954344,
-        "y": 5.438844507845934
+        "x": 2.6,
+        "y": 4.0
       },
       "prevControl": {
-        "x": 2.4869426596606603,
-        "y": 6.781191214296184
+        "x": 2.0946678004195314,
+        "y": 3.729508419393147
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,12 +31,19 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Mid Spinup",
+      "waypointRelativePos": 0.4753544902093165,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0,
+    "maxAngularVelocity": 270.0,
+    "maxAngularAcceleration": 360.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
@@ -45,10 +52,10 @@
     "rotation": 0.0
   },
   "reversed": false,
-  "folder": "TEST PATHS",
+  "folder": "Center Auto",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 90.0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

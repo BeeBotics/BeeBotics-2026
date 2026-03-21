@@ -33,7 +33,7 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "Mid Spinup"
+                        "name": "Intake"
                       }
                     }
                   ]
@@ -101,7 +101,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Mid Spinup"
+            "name": "Intake"
           }
         },
         {

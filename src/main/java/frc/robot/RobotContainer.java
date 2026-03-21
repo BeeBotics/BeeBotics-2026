@@ -57,6 +57,8 @@ public class RobotContainer {
   private final IndexRollerSubsystem m_indexRoller = new IndexRollerSubsystem();
   private final HopperRollerSubsystem m_hopperRoller = new HopperRollerSubsystem();
 
+  private Translation2d Hub;
+
   private final Vision vision;
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -168,6 +170,11 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    // if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
+    //   Hub = new Translation2d(16.54 - 4.6, 4); // Red Hub
+    // } else {
+    //   Hub = new Translation2d(4.6, 4); // Blue Hub
+    // }
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
@@ -177,18 +184,18 @@ public class RobotContainer {
             () -> -controller.getRightX()));
 
     // Lock to 0° when A button is held
-    // controller
-    //     .rightBumper()
-    //     .whileTrue(
-    //         DriveCommands.joystickDrive(
-    //             drive,
-    //             () -> -(LimelightHelpers.getTY("") + 7.5) * 0.3,
-    //             () -> -controller.getLeftX(),
-    //             () -> -(LimelightHelpers.getTX("") + 8) * 0.04));
+    controller
+        .rightBumper()
+        .whileTrue(
+            DriveCommands.joystickDrive(
+                drive,
+                () -> -(LimelightHelpers.getTY("") + 7.5) * 0.3,
+                () -> -controller.getLeftX(),
+                () -> -(LimelightHelpers.getTX("") + 8) * 0.04));
 
     // Define your targets (e.g., Center of the Speaker)
-    final Translation2d BLUE_HUB = new Translation2d(4.6, 4);
-    final Translation2d RED_HUB = new Translation2d(16.54 - 4.6, 4);
+    // final Translation2d BLUE_HUB = new Translation2d(4.6, 4);
+    // final Translation2d RED_HUB = new Translation2d(16.54 - 4.6, 4);
 
     // controller
     //     .rightBumper()
@@ -199,14 +206,14 @@ public class RobotContainer {
     //             DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
     //                 ? RED_HUB
     //                 : RED_HUB));
-    controller
-        .rightBumper()
-        .whileTrue(
-            drive.autoAimDrive(
-                () -> -controller.getLeftY(), // Forward/Backward (though PID overrides this)
-                () -> -controller.getLeftX(), // Left/Right (Driver keeps control)
-                BLUE_HUB // The Hub Translation2d we defined
-                ));
+    // controller
+    //     .rightBumper()
+    //     .whileTrue(
+    //         drive.autoAimDrive(
+    //             () -> -controller.getLeftY(), // Forward/Backward (though PID overrides this)
+    //             () -> -controller.getLeftX(), // Left/Right (Driver keeps control)
+    //             Hub // The Hub Translation2d we defined
+    //             ));
     // PIDController aimController = new PIDController(0.2, 0.0, 0.0);
     // aimController.enableContinuousInput(-Math.PI, Math.PI);
     // controller

@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.0,
-        "y": 7.0
+        "x": 2.4758380987310145,
+        "y": 7.025798107182502
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 4.0,
-        "y": 6.0
+        "x": 2.8498554216867467,
+        "y": 6.187759036144579
       },
       "prevControl": {
-        "x": 3.0,
-        "y": 6.0
+        "x": 2.653167470989914,
+        "y": 6.3574691523029445
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -45.0
   },
   "reversed": false,
   "folder": "TEST PATHS",

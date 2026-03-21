@@ -32,7 +32,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -60,11 +59,6 @@ public class Drive extends SubsystemBase {
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private final SysIdRoutine sysId;
-  // Shot calculator constants
-  private final double SHOT_SLOPE = 600.0; // RPM per meter
-  private final double BASE_RPM = 3000.0; // RPM at 0 meters
-  private final double MIN_RPM = 2000.0;
-  private final double MAX_RPM = 5400.0;
 
   private double currentTargetRPM = 0;
 
@@ -89,7 +83,7 @@ public class Drive extends SubsystemBase {
           lastModulePositions,
           Pose2d.kZero,
           VecBuilder.fill(0.1, 0.1, 0.1),
-          VecBuilder.fill(0.1, 0.1, 0.1));
+          VecBuilder.fill(0.2, 0.2, 0.1));
 
   private final Field2d field2d = new Field2d();
 
@@ -104,6 +98,7 @@ public class Drive extends SubsystemBase {
     modules[1] = new Module(frModuleIO, 1);
     modules[2] = new Module(blModuleIO, 2);
     modules[3] = new Module(brModuleIO, 3);
+    System.out.println("Test2");
 
     // Usage reporting for swerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
@@ -147,11 +142,6 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-      Hub = new Translation2d(16.54 - 4.6, 4); // Red Hub
-    } else {
-      Hub = new Translation2d(4.6, 4); // Blue Hub
-    }
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
     Logger.processInputs("Drive/Gyro", gyroInputs);
@@ -200,47 +190,41 @@ public class Drive extends SubsystemBase {
         Twist2d twist = kinematics.toTwist2d(moduleDeltas);
         rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
       }
+
       // Apply update
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
-      LimelightHelpers.SetRobotOrientation("", rawGyroRotation.getDegrees(), 0, 0, 0, 0, 0);
-      poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
-
-      if (poseEstimate.tagCount > 0) {
-        Pose2d visionPose = poseEstimate.pose;
-        double distToTag = poseEstimate.avgTagDist;
-        double angularVelo =
-            Math.abs(Units.radiansToDegrees(getChassisSpeeds().omegaRadiansPerSecond));
-
-        boolean rejectUpdate = false;
-
-        if (poseEstimate.tagCount == 1 && distToTag > 2.0) {
-          rejectUpdate = true; // Be very strict with single tags
-        }
-        if (angularVelo > 180) {
-          rejectUpdate = true;
-        }
-        if (distToTag > 3) {
-          rejectUpdate = true;
-        }
-        if (DriverStation.isAutonomous()) {
-          rejectUpdate = true;
-        }
-        if (!rejectUpdate) {
-          // Small numbers (0.1) = Trust vision a lot. Large numbers (2.0) = Trust encoders more.
-          poseEstimator.addVisionMeasurement(visionPose, poseEstimate.timestampSeconds);
-        }
-      }
 
       // // Adding field map to smart dashboard
       field2d.setRobotPose(getPose());
       SmartDashboard.putData(field2d);
     }
-    if (DriverStation.isTeleop() && !DriverStation.isAutonomous()) {
+    System.out.println("Test");
+    // Update gyro alert
+    // LimelightHelpers.SetRobotOrientation("", rawGyroRotation.getDegrees(), 0, 0, 0, 0, 0);
+    System.out.print("setRobotOrientation");
+    poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
+    SmartDashboard.putNumber("Raw Gyro", rawGyroRotation.getDegrees());
+    System.out.print("Display Gyro");
 
-      getMapRPM(Hub);
+    if (poseEstimate.tagCount > 0) {
+      Pose2d visionPose = poseEstimate.pose;
+      double distToTag = poseEstimate.avgTagDist;
+
+      boolean rejectUpdate = false;
+
+      if (distToTag > 3) {
+        rejectUpdate = true;
+      }
+      if (DriverStation.isAutonomous()) {
+        rejectUpdate = true;
+      }
+      if (!rejectUpdate) {
+        // // Small numbers (0.1) = Trust vision a lot. Large numbers (2.0) = Trust encoders more.
+        poseEstimator.addVisionMeasurement(visionPose, poseEstimate.timestampSeconds);
+        System.out.print("AddVision");
+      }
     }
 
-    // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
   }
 
@@ -364,7 +348,7 @@ public class Drive extends SubsystemBase {
   }
 
   /** Returns the current odometry pose. */
-  @AutoLogOutput(key = "Odometry/Robot")
+  @AutoLogOutput(key = "Pose/Robot")
   public Pose2d getPose() {
     return poseEstimator.getEstimatedPosition();
   }
@@ -485,25 +469,5 @@ public class Drive extends SubsystemBase {
           runVelocity(
               ChassisSpeeds.fromFieldRelativeSpeeds(finalX, finalY, rotationOutput, getRotation()));
         });
-  }
-
-  public double getMapRPM(Translation2d target) {
-    // 1. Calculate distance from current pose to target
-    double distance = getPose().getTranslation().getDistance(target);
-
-    // 2. Linear Equation: RPM = (Slope * Distance) + Intercept
-    double targetRPM = (SHOT_SLOPE * distance) + BASE_RPM;
-
-    // // 3. Clamp the value so it stays within safe motor limits
-    if (targetRPM < MIN_RPM) targetRPM = MIN_RPM;
-    if (targetRPM > MAX_RPM) targetRPM = MAX_RPM;
-    if (distance < 2.5) {
-      targetRPM = targetRPM - 450;
-    }
-    // 4. Logging for debugging
-    SmartDashboard.putNumber("Shot/Distance", distance);
-    SmartDashboard.putNumber("Shot/Target RPM", targetRPM);
-
-    return targetRPM;
   }
 }
