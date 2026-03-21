@@ -38,7 +38,7 @@ public class IntakeRotationSubsystem extends SubsystemBase {
 
     leadingRotationEncoder = leadingRotationMotor.getEncoder();
 
-    pid = new PIDController(8, 0, 0.4); // Needs tuning
+    pid = new PIDController(4, 0, 0.4); // Needs tuning
   }
 
   // Returns arm Rotation

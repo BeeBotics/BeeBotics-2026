@@ -52,7 +52,7 @@
   "reversed": false,
   "folder": "Skyp's Right Trench Paths",
   "idealStartingState": {
-    "velocity": 0,
+    "velocity": 0.0,
     "rotation": 0.0
   },
   "useDefaultConstraints": true

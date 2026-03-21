@@ -49,4 +49,8 @@ public class GyroIONavX implements GyroIO {
   public double getRoll() {
     return navX.getRoll();
   }
+
+  public double getYaw() {
+    return navX.getYaw();
+  }
 }

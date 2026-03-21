@@ -83,12 +83,6 @@
         {
           "type": "named",
           "data": {
-            "name": "Jostle"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "Shoot"
           }
         },

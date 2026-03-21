@@ -19,13 +19,13 @@ import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -55,9 +55,21 @@ import org.littletonrobotics.junction.Logger;
 public class Drive extends SubsystemBase {
   static final Lock odometryLock = new ReentrantLock();
   private final GyroIO gyroIO;
+  private LimelightHelpers.PoseEstimate poseEstimate;
+  private Pose2d cameraPose;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private final SysIdRoutine sysId;
+  // Shot calculator constants
+  private final double SHOT_SLOPE = 600.0; // RPM per meter
+  private final double BASE_RPM = 3000.0; // RPM at 0 meters
+  private final double MIN_RPM = 2000.0;
+  private final double MAX_RPM = 5400.0;
+
+  private double currentTargetRPM = 0;
+
+  private Translation2d Hub;
+
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
 
@@ -71,23 +83,15 @@ public class Drive extends SubsystemBase {
         new SwerveModulePosition()
       };
   private SwerveDrivePoseEstimator poseEstimator =
-      new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
+      new SwerveDrivePoseEstimator(
+          kinematics,
+          rawGyroRotation,
+          lastModulePositions,
+          Pose2d.kZero,
+          VecBuilder.fill(0.1, 0.1, 0.1),
+          VecBuilder.fill(0.1, 0.1, 0.1));
 
   private final Field2d field2d = new Field2d();
-
-  // The "Shot Map" - Key is Distance (meters), Value is RPM
-  private final InterpolatingDoubleTreeMap shotMap = new InterpolatingDoubleTreeMap();
-
-  public void setupShotMap() {
-    // Format: shotMap.put(Distance_Meters, Target_RPM);
-    shotMap.put(0.0, 0.0);
-    shotMap.put(1.0, 4500.0); // Close
-    shotMap.put(2.0, 4750.0); 
-    shotMap.put(3.0, 5000.0);
-    shotMap.put(4.0, 6250.0);
-    shotMap.put(5.0, 6500.0);
-    shotMap.put(6.0, 6750.0);
-  }
 
   public Drive(
       GyroIO gyroIO,
@@ -107,6 +111,7 @@ public class Drive extends SubsystemBase {
     // Start odometry thread
     SparkOdometryThread.getInstance().start();
 
+    LimelightHelpers.SetIMUMode(getName(), 0);
     // Configure AutoBuilder for PathPlanner
     AutoBuilder.configure(
         this::getPose,
@@ -142,6 +147,11 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
+    if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
+      Hub = new Translation2d(16.54 - 4.6, 4); // Red Hub
+    } else {
+      Hub = new Translation2d(4.6, 4); // Blue Hub
+    }
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
     Logger.processInputs("Drive/Gyro", gyroInputs);
@@ -190,17 +200,48 @@ public class Drive extends SubsystemBase {
         Twist2d twist = kinematics.toTwist2d(moduleDeltas);
         rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
       }
-
       // Apply update
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
+      LimelightHelpers.SetRobotOrientation("", rawGyroRotation.getDegrees(), 0, 0, 0, 0, 0);
+      poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
+
+      if (poseEstimate.tagCount > 0) {
+        Pose2d visionPose = poseEstimate.pose;
+        double distToTag = poseEstimate.avgTagDist;
+        double angularVelo =
+            Math.abs(Units.radiansToDegrees(getChassisSpeeds().omegaRadiansPerSecond));
+
+        boolean rejectUpdate = false;
+
+        if (poseEstimate.tagCount == 1 && distToTag > 2.0) {
+          rejectUpdate = true; // Be very strict with single tags
+        }
+        if (angularVelo > 180) {
+          rejectUpdate = true;
+        }
+        if (distToTag > 3) {
+          rejectUpdate = true;
+        }
+        if (DriverStation.isAutonomous()) {
+          rejectUpdate = true;
+        }
+        if (!rejectUpdate) {
+          // Small numbers (0.1) = Trust vision a lot. Large numbers (2.0) = Trust encoders more.
+          poseEstimator.addVisionMeasurement(visionPose, poseEstimate.timestampSeconds);
+        }
+      }
+
+      // // Adding field map to smart dashboard
+      field2d.setRobotPose(getPose());
+      SmartDashboard.putData(field2d);
+    }
+    if (DriverStation.isTeleop() && !DriverStation.isAutonomous()) {
+
+      getMapRPM(Hub);
     }
 
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
-
-    // Adding field map to smart dashboard
-    field2d.setRobotPose(getPose());
-    SmartDashboard.putData(field2d);
   }
 
   /**
@@ -343,7 +384,7 @@ public class Drive extends SubsystemBase {
       Pose2d visionRobotPoseMeters,
       double timestampSeconds,
       Matrix<N3, N1> visionMeasurementStdDevs) {
-
+    LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
     // CRITICAL: You must lock the thread before updating the estimator
     odometryLock.lock();
     try {
@@ -364,41 +405,105 @@ public class Drive extends SubsystemBase {
     return maxSpeedMetersPerSec / driveBaseRadius;
   }
 
+  // public Command autoAimDrive(
+  //     DoubleSupplier xSupplier, DoubleSupplier ySupplier, Translation2d targetTranslation) {
+
+  //   // Create a local PID controller for rotation
+  //   // P=5.0 is a typical starting point for swerve rotation; adjust if it oscillates or is
+  //   // sluggish.
+  //   PIDController thetaController = new PIDController(3.0, 0, 0);
+  //   thetaController.enableContinuousInput(-Math.PI, Math.PI); // Essential for circular
+  // wrap-around
+  //   thetaController.setTolerance(Units.degreesToRadians(1.0)); // 1 degree tolerance
+
+  //   return run(
+  //       () -> {
+  //         // 1. Calculate the rotation required to face the target
+  //         Translation2d currentTranslation = getPose().getTranslation();
+  //         Translation2d delta = targetTranslation.minus(currentTranslation);
+
+  //         // Use atan2 to get the angle from the robot to the target
+  //         Rotation2d targetRotation = new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
+
+  //         // 2. Calculate the rotation speed using PID
+  //         double rotationOutput =
+  //             thetaController.calculate(
+  //                 getPose().getRotation().getRadians(), targetRotation.getRadians());
+
+  //         // 3. Convert supplier values and rotation to ChassisSpeeds
+  //         runVelocity(
+  //             ChassisSpeeds.fromFieldRelativeSpeeds(
+  //                 xSupplier.getAsDouble(), ySupplier.getAsDouble(), rotationOutput,
+  // getRotation()));
+  //       });
+  // }
   public Command autoAimDrive(
       DoubleSupplier xSupplier, DoubleSupplier ySupplier, Translation2d targetTranslation) {
+    PIDController thetaController = new PIDController(4.0, 0, 0);
+    thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
-    // Create a local PID controller for rotation
-    // P=5.0 is a typical starting point for swerve rotation; adjust if it oscillates or is
-    // sluggish.
-    PIDController thetaController = new PIDController(5.0, 0, 0);
-    thetaController.enableContinuousInput(-Math.PI, Math.PI); // Essential for circular wrap-around
-    thetaController.setTolerance(Units.degreesToRadians(1.0)); // 1 degree tolerance
+    // XY Controllers for movement
+    PIDController xController = new PIDController(3.0, 0, 0);
+    PIDController yController = new PIDController(3.0, 0, 0);
 
     return run(
         () -> {
-          // 1. Calculate the rotation required to face the target
-          Translation2d currentTranslation = getPose().getTranslation();
-          Translation2d delta = targetTranslation.minus(currentTranslation);
+          Pose2d currentPose = getPose();
+          Translation2d robotTrans = currentPose.getTranslation();
 
-          // Use atan2 to get the angle from the robot to the target
+          // 1. Calculate the Angle to the Target (for rotation)
+          Translation2d delta = targetTranslation.minus(robotTrans);
           Rotation2d targetRotation = new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
 
-          // 2. Calculate the rotation speed using PID
+          // 2. Calculate the Point 2m away from Target (The "Shot Point")
+          // We find the direction FROM target TO robot, then extend 2m
+          Translation2d dirFromTarget = robotTrans.minus(targetTranslation);
+          double distance = dirFromTarget.getNorm();
+
+          // Avoid division by zero if we are exactly on the target
+          Translation2d shotPoint;
+          if (distance > 0.1) {
+            shotPoint = targetTranslation.plus(dirFromTarget.times(2.0 / distance));
+          } else {
+            shotPoint = targetTranslation.plus(new Translation2d(2.0, 0)); // Default offset
+          }
+
+          // 3. Calculate Velocities to reach that Shot Point
+          double xVelocity = xController.calculate(robotTrans.getX(), shotPoint.getX());
+          double yVelocity = yController.calculate(robotTrans.getY(), shotPoint.getY());
+
+          // 4. Calculate Rotation
           double rotationOutput =
               thetaController.calculate(
-                  getPose().getRotation().getRadians(), targetRotation.getRadians());
+                  currentPose.getRotation().getRadians(), targetRotation.getRadians());
 
-          // 3. Convert supplier values and rotation to ChassisSpeeds
+          // 5. Combine with Driver Input (Optional)
+          // Adding suppliers allows the driver to "fight" the auto-align if needed
+          double finalX = xVelocity + (xSupplier.getAsDouble() * 0.5);
+          double finalY = yVelocity + (ySupplier.getAsDouble() * 0.5);
+
           runVelocity(
-              ChassisSpeeds.fromFieldRelativeSpeeds(
-                  xSupplier.getAsDouble(), ySupplier.getAsDouble(), rotationOutput, getRotation()));
+              ChassisSpeeds.fromFieldRelativeSpeeds(finalX, finalY, rotationOutput, getRotation()));
         });
   }
 
   public double getMapRPM(Translation2d target) {
+    // 1. Calculate distance from current pose to target
     double distance = getPose().getTranslation().getDistance(target);
-    
-    // .get() automatically interpolates (calculates the in-between value)
-    return shotMap.get(distance);
+
+    // 2. Linear Equation: RPM = (Slope * Distance) + Intercept
+    double targetRPM = (SHOT_SLOPE * distance) + BASE_RPM;
+
+    // // 3. Clamp the value so it stays within safe motor limits
+    if (targetRPM < MIN_RPM) targetRPM = MIN_RPM;
+    if (targetRPM > MAX_RPM) targetRPM = MAX_RPM;
+    if (distance < 2.5) {
+      targetRPM = targetRPM - 450;
+    }
+    // 4. Logging for debugging
+    SmartDashboard.putNumber("Shot/Distance", distance);
+    SmartDashboard.putNumber("Shot/Target RPM", targetRPM);
+
+    return targetRPM;
   }
 }

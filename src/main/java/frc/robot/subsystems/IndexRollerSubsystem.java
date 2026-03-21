@@ -35,7 +35,7 @@ public class IndexRollerSubsystem extends SubsystemBase {
         .maxMotion
         // Set MAXMotion parameters for MAXMotion Velocity control
         .cruiseVelocity(5000)
-        .maxAcceleration(20000)
+        .maxAcceleration(25000)
         .allowedProfileError(1);
     ;
 

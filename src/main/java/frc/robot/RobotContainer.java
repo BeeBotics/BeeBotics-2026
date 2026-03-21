@@ -12,8 +12,6 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -127,7 +125,7 @@ public class RobotContainer {
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
         "Mid Spinup",
-        new ShooterCommand(m_shooter, 4700) // needs tuned
+        new ShooterCommand(m_shooter, 4400) // needs tuned
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
         "Shoot",
@@ -141,7 +139,6 @@ public class RobotContainer {
         new IndexRollerCommand(m_indexRoller, 0)
             .alongWith(new HopperRollerCommand(m_hopperRoller, 0))
             .alongWith(new ShooterCommand(m_shooter, 0)));
-    NamedCommands.registerCommand("Jostle", new MoveIntakeToPositionCommand(m_intakeRotation, 0));
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     // Set up SysId routines
@@ -193,16 +190,40 @@ public class RobotContainer {
     final Translation2d BLUE_HUB = new Translation2d(4.6, 4);
     final Translation2d RED_HUB = new Translation2d(16.54 - 4.6, 4);
 
+    // controller
+    //     .rightBumper()
+    //     .whileTrue(
+    //         drive.autoAimDrive(
+    //             () -> -controller.getLeftY() * drive.getMaxLinearSpeedMetersPerSec(),
+    //             () -> -controller.getLeftX() * drive.getMaxLinearSpeedMetersPerSec(),
+    //             DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
+    //                 ? RED_HUB
+    //                 : RED_HUB));
     controller
         .rightBumper()
         .whileTrue(
             drive.autoAimDrive(
-                () -> -controller.getLeftY() * drive.getMaxLinearSpeedMetersPerSec(),
-                () -> -controller.getLeftX() * drive.getMaxLinearSpeedMetersPerSec(),
-                DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
-                    ? BLUE_HUB
-                    : RED_HUB));
-
+                () -> -controller.getLeftY(), // Forward/Backward (though PID overrides this)
+                () -> -controller.getLeftX(), // Left/Right (Driver keeps control)
+                BLUE_HUB // The Hub Translation2d we defined
+                ));
+    // PIDController aimController = new PIDController(0.2, 0.0, 0.0);
+    // aimController.enableContinuousInput(-Math.PI, Math.PI);
+    // controller
+    //     .rightBumper()
+    //     .whileTrue(
+    //         Commands.startRun(
+    //             () -> {
+    //               aimController.reset();
+    //             },
+    //             () -> {
+    //               DriveCommands.joystickDriveAtAngle(
+    //                 drive,
+    //               () -> -controller.getLeftX(),
+    //               () -> -controller.getLeftY(),
+    //               () -> vision.getTargetX(0));
+    //             },
+    //             drive));
     // Switch to X pattern when X button is pressed
     // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
@@ -220,8 +241,8 @@ public class RobotContainer {
     controller
         .x()
         .whileTrue(
-            new ShooterCommand(m_shooter, 
-            drive.getMapRPM(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red? BLUE_HUB : RED_HUB)) // 4500 if not using shotmap or auto align
+            new ShooterCommand(m_shooter, 4500)
+                // m_shooter, drive.getMapRPM(RED_HUB)) // 4500 if not using shotmap or auto align
                 .alongWith(new IntakeRollerCommand(m_intakeRoller, 0.2)));
 
     controller
@@ -244,7 +265,7 @@ public class RobotContainer {
         .b()
         .whileTrue(
             new IntakeRollerCommand(m_intakeRoller, 1)
-                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 0.07))
+                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 0.08))
                 .alongWith(new IndexRollerCommand(m_indexRoller, 0))
                 .alongWith(new HopperRollerCommand(m_hopperRoller, 0))
                 .alongWith(new ShooterCommand(m_shooter, 0)));
