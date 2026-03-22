@@ -57,7 +57,8 @@ public class RobotContainer {
   private final IndexRollerSubsystem m_indexRoller = new IndexRollerSubsystem();
   private final HopperRollerSubsystem m_hopperRoller = new HopperRollerSubsystem();
 
-  private Translation2d Hub;
+  private Translation2d Hub = new Translation2d(4.6, 4); // Blue
+  //   private Translation2d Hub = new Translation2d(16.54 - 4.6, 4); // Blue
 
   private final Vision vision;
   // Controller
@@ -118,7 +119,7 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "Far Spinup",
         new ShooterCommand(
-                m_shooter, 5100) // needs tuned //4775 for high angle // 5000 for low angle
+                m_shooter, 5000) // needs tuned //4775 for high angle // 5000 for low angle
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
         "Far Spinup2",
@@ -184,14 +185,14 @@ public class RobotContainer {
             () -> -controller.getRightX()));
 
     // Lock to 0° when A button is held
-    controller
-        .rightBumper()
-        .whileTrue(
-            DriveCommands.joystickDrive(
-                drive,
-                () -> -(LimelightHelpers.getTY("") + 7.5) * 0.3,
-                () -> -controller.getLeftX(),
-                () -> -(LimelightHelpers.getTX("") + 8) * 0.04));
+    // controller
+    //     .rightBumper()
+    //     .whileTrue(
+    //         DriveCommands.joystickDrive(
+    //             drive,
+    //             () -> -(LimelightHelpers.getTY("") + 7.5) * 0.3,
+    //             () -> -controller.getLeftX(),
+    //             () -> -(LimelightHelpers.getTX("") + 8) * 0.04));
 
     // Define your targets (e.g., Center of the Speaker)
     // final Translation2d BLUE_HUB = new Translation2d(4.6, 4);
@@ -206,14 +207,14 @@ public class RobotContainer {
     //             DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
     //                 ? RED_HUB
     //                 : RED_HUB));
-    // controller
-    //     .rightBumper()
-    //     .whileTrue(
-    //         drive.autoAimDrive(
-    //             () -> -controller.getLeftY(), // Forward/Backward (though PID overrides this)
-    //             () -> -controller.getLeftX(), // Left/Right (Driver keeps control)
-    //             Hub // The Hub Translation2d we defined
-    //             ));
+    controller
+        .rightBumper()
+        .whileTrue(
+            drive.autoAimDrive(
+                () -> -controller.getLeftY(), // Forward/Backward (though PID overrides this)
+                () -> -controller.getLeftX(), // Left/Right (Driver keeps control)
+                Hub // The Hub Translation2d we defined
+                ));
     // PIDController aimController = new PIDController(0.2, 0.0, 0.0);
     // aimController.enableContinuousInput(-Math.PI, Math.PI);
     // controller

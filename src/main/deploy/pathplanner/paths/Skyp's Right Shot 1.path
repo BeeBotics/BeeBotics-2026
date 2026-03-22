@@ -25,7 +25,7 @@
       },
       "nextControl": {
         "x": 3.9617189990797197,
-        "y": 0.44655746540246444
+        "y": 0.4465574654024644
       },
       "isLocked": false,
       "linkedName": null
@@ -63,7 +63,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 53.161466299718775
+    "rotation": 58.204430953255496
   },
   "reversed": false,
   "folder": "Skyp's Right Trench Paths",

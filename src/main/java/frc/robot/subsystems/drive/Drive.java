@@ -83,7 +83,7 @@ public class Drive extends SubsystemBase {
           lastModulePositions,
           Pose2d.kZero,
           VecBuilder.fill(0.1, 0.1, 0.1),
-          VecBuilder.fill(0.2, 0.2, 0.1));
+          VecBuilder.fill(0.2, 0.2, 99999999));
 
   private final Field2d field2d = new Field2d();
 
@@ -106,7 +106,7 @@ public class Drive extends SubsystemBase {
     // Start odometry thread
     SparkOdometryThread.getInstance().start();
 
-    LimelightHelpers.SetIMUMode(getName(), 0);
+    // LimelightHelpers.SetIMUMode(getName(), 0);
     // Configure AutoBuilder for PathPlanner
     AutoBuilder.configure(
         this::getPose,
@@ -193,38 +193,33 @@ public class Drive extends SubsystemBase {
 
       // Apply update
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
+      // LimelightHelpers.SetRobotOrientation("", rawGyroRotation.getDegrees(), 0, 0, 0, 0, 0);
+      poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("");
+      SmartDashboard.putNumber("Raw Gyro", rawGyroRotation.getDegrees());
 
+      if (poseEstimate.tagCount > 0) {
+        Pose2d visionPose = poseEstimate.pose;
+        double distToTag = poseEstimate.avgTagDist;
+
+        boolean rejectUpdate = false;
+
+        if (distToTag > 3) {
+          rejectUpdate = true;
+        }
+        if (DriverStation.isAutonomous()) {
+          rejectUpdate = true;
+        }
+        if (!rejectUpdate) {
+          // // Small numbers (0.1) = Trust vision a lot. Large numbers (2.0) = Trust encoders more.
+          poseEstimator.addVisionMeasurement(
+              visionPose, poseEstimate.timestampSeconds, VecBuilder.fill(0.2, 0.2, 99999999));
+        }
+      }
       // // Adding field map to smart dashboard
       field2d.setRobotPose(getPose());
       SmartDashboard.putData(field2d);
     }
-    System.out.println("Test");
     // Update gyro alert
-    // LimelightHelpers.SetRobotOrientation("", rawGyroRotation.getDegrees(), 0, 0, 0, 0, 0);
-    System.out.print("setRobotOrientation");
-    poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
-    SmartDashboard.putNumber("Raw Gyro", rawGyroRotation.getDegrees());
-    System.out.print("Display Gyro");
-
-    if (poseEstimate.tagCount > 0) {
-      Pose2d visionPose = poseEstimate.pose;
-      double distToTag = poseEstimate.avgTagDist;
-
-      boolean rejectUpdate = false;
-
-      if (distToTag > 3) {
-        rejectUpdate = true;
-      }
-      if (DriverStation.isAutonomous()) {
-        rejectUpdate = true;
-      }
-      if (!rejectUpdate) {
-        // // Small numbers (0.1) = Trust vision a lot. Large numbers (2.0) = Trust encoders more.
-        poseEstimator.addVisionMeasurement(visionPose, poseEstimate.timestampSeconds);
-        System.out.print("AddVision");
-      }
-    }
-
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
   }
 
