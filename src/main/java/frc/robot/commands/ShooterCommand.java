@@ -2,27 +2,24 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ShooterSubsystem;
+import java.util.function.DoubleSupplier;
 
 public class ShooterCommand extends Command {
 
-  private final ShooterSubsystem shooterSubsystem;
-  private final double RPM;
+  private final ShooterSubsystem m_shooter;
 
-  public ShooterCommand(ShooterSubsystem m_shooter, double _RPM) {
-    shooterSubsystem = m_shooter;
-    RPM = _RPM;
+  private final DoubleSupplier rpmSupplier;
 
-    addRequirements(shooterSubsystem);
+  // Update constructor
+  public ShooterCommand(ShooterSubsystem shooter, DoubleSupplier rpmSupplier) {
+    this.m_shooter = shooter;
+    this.rpmSupplier = rpmSupplier;
+    addRequirements(m_shooter);
   }
 
+  // In the execute() method of the command:
   @Override
-  public void initialize() {
-    shooterSubsystem.setTargetVelocity(RPM);
-  }
-
-  @Override
-  public boolean isFinished() {
-    // End the command when the shooter reaches the desired speed
-    return Math.abs(shooterSubsystem.getSpeed() - RPM) < 4500;
+  public void execute() {
+    m_shooter.setTargetVelocity(rpmSupplier.getAsDouble());
   }
 }

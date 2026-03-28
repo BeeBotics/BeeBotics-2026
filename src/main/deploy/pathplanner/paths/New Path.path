@@ -1,0 +1,310 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 4.434373493975312,
+        "y": 0.5709156626568757
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.362999999999408,
+        "y": 0.5053493975966354
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.723614457830733,
+        "y": 2.1007951807291647
+      },
+      "prevControl": {
+        "x": 7.723614457830733,
+        "y": 1.794819277114708
+      },
+      "nextControl": {
+        "x": 7.723614457830733,
+        "y": 2.8110963855484368
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.723614457830733,
+        "y": 3.6525301204882012
+      },
+      "prevControl": {
+        "x": 7.734542168674105,
+        "y": 2.2647108433797665
+      },
+      "nextControl": {
+        "x": 7.712686746987361,
+        "y": 5.040349397596636
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.865903614457239,
+        "y": 0.680192771084337
+      },
+      "prevControl": {
+        "x": 6.391582136425244,
+        "y": 0.7447497825487974
+      },
+      "nextControl": {
+        "x": 5.24302409638495,
+        "y": 0.6036987951869959
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.7022168674692884,
+        "y": 0.680192771084337
+      },
+      "prevControl": {
+        "x": 4.9261204819271205,
+        "y": 0.6036987951869959
+      },
+      "nextControl": {
+        "x": 2.696634559695581,
+        "y": 0.7430416653150392
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.161409638553626,
+        "y": 1.4232771084400087
+      },
+      "prevControl": {
+        "x": 1.8555022505212024,
+        "y": 1.6592628077793061
+      },
+      "nextControl": {
+        "x": 2.9263493975897705,
+        "y": 0.8331807228978413
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.729421686746397,
+        "y": 0.680192771084337
+      },
+      "prevControl": {
+        "x": 3.7240129011772725,
+        "y": 0.6801927710843371
+      },
+      "nextControl": {
+        "x": 5.3632289156620585,
+        "y": 0.680192771084337
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.794759036143987,
+        "y": 1.6746144578375994
+      },
+      "prevControl": {
+        "x": 6.904036144577722,
+        "y": 0.7020481927773585
+      },
+      "nextControl": {
+        "x": 6.692266032053599,
+        "y": 2.586802194242058
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.538072289156036,
+        "y": 5.324469879524345
+      },
+      "prevControl": {
+        "x": 6.7291927710837465,
+        "y": 5.313542168680971
+      },
+      "nextControl": {
+        "x": 4.90419753825994,
+        "y": 5.330285244211464
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.592939759035554,
+        "y": 5.324469879524345
+      },
+      "prevControl": {
+        "x": 4.412518072288566,
+        "y": 5.455602409644828
+      },
+      "nextControl": {
+        "x": 2.9836844182193247,
+        "y": 5.226989024993746
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.379963855421096,
+        "y": 4.920144578319525
+      },
+      "prevControl": {
+        "x": 3.166759036143987,
+        "y": 5.324469879524345
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 90.00000000001536
+    },
+    {
+      "waypointRelativePos": 2.01244813278003,
+      "rotationDegrees": 90.0
+    },
+    {
+      "waypointRelativePos": 2.9917012448132283,
+      "rotationDegrees": 180.0
+    },
+    {
+      "waypointRelativePos": 4.145228215767536,
+      "rotationDegrees": 180.0
+    },
+    {
+      "waypointRelativePos": 4.765145228215668,
+      "rotationDegrees": -129.75326359632763
+    },
+    {
+      "waypointRelativePos": 5.223236514522783,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 5.482157676348441,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 6.024066390041401,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 6.8298755186720825,
+      "rotationDegrees": 90.0
+    },
+    {
+      "waypointRelativePos": 7.659751037344326,
+      "rotationDegrees": 90.0
+    },
+    {
+      "waypointRelativePos": 9.037344398340215,
+      "rotationDegrees": 90.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "Deploy Intake",
+      "waypointRelativePos": 0.1091811414391998,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "Intake",
+      "waypointRelativePos": 0.506203473945409,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "Far Spinup",
+      "waypointRelativePos": 2.84863523573194,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "Stop Shooting",
+      "waypointRelativePos": 4.833746898262904,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "Shoot",
+      "waypointRelativePos": 4.853598014888206,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "Lil C Sleepy Times",
+      "waypointRelativePos": 4.933002481389571,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "Intake",
+      "waypointRelativePos": 6.362282878411745,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "Far Spinup",
+      "waypointRelativePos": 7.652605459057068,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "Shoot",
+      "waypointRelativePos": 10.0,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "Lil C Sleepy Times",
+      "waypointRelativePos": 10.0,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "Stop Shooting",
+      "waypointRelativePos": 10.0,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 270.0,
+    "maxAngularAcceleration": 360.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0.0,
+    "rotation": 154.09349200048555
+  },
+  "reversed": false,
+  "folder": "New Folder",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": true
+}

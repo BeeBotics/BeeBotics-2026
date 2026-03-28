@@ -32,6 +32,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -60,9 +61,8 @@ public class Drive extends SubsystemBase {
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private final SysIdRoutine sysId;
 
-  private double currentTargetRPM = 0;
-
   private Translation2d Hub;
+  double distance = 0;
 
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
@@ -83,7 +83,7 @@ public class Drive extends SubsystemBase {
           lastModulePositions,
           Pose2d.kZero,
           VecBuilder.fill(0.1, 0.1, 0.1),
-          VecBuilder.fill(0.2, 0.2, 99999999));
+          VecBuilder.fill(0.2, 0.2, 0.1));
 
   private final Field2d field2d = new Field2d();
 
@@ -98,7 +98,6 @@ public class Drive extends SubsystemBase {
     modules[1] = new Module(frModuleIO, 1);
     modules[2] = new Module(blModuleIO, 2);
     modules[3] = new Module(brModuleIO, 3);
-    System.out.println("Test2");
 
     // Usage reporting for swerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
@@ -193,9 +192,9 @@ public class Drive extends SubsystemBase {
 
       // Apply update
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
+      // Update gyro alert
       // LimelightHelpers.SetRobotOrientation("", rawGyroRotation.getDegrees(), 0, 0, 0, 0, 0);
       poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("");
-      SmartDashboard.putNumber("Raw Gyro", rawGyroRotation.getDegrees());
 
       if (poseEstimate.tagCount > 0) {
         Pose2d visionPose = poseEstimate.pose;
@@ -203,7 +202,7 @@ public class Drive extends SubsystemBase {
 
         boolean rejectUpdate = false;
 
-        if (distToTag > 3) {
+        if (distToTag > 3.0) {
           rejectUpdate = true;
         }
         if (DriverStation.isAutonomous()) {
@@ -211,15 +210,14 @@ public class Drive extends SubsystemBase {
         }
         if (!rejectUpdate) {
           // // Small numbers (0.1) = Trust vision a lot. Large numbers (2.0) = Trust encoders more.
-          poseEstimator.addVisionMeasurement(
-              visionPose, poseEstimate.timestampSeconds, VecBuilder.fill(0.2, 0.2, 99999999));
+          poseEstimator.addVisionMeasurement(visionPose, poseEstimate.timestampSeconds);
         }
       }
       // // Adding field map to smart dashboard
       field2d.setRobotPose(getPose());
       SmartDashboard.putData(field2d);
     }
-    // Update gyro alert
+
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
   }
 
@@ -384,85 +382,125 @@ public class Drive extends SubsystemBase {
     return maxSpeedMetersPerSec / driveBaseRadius;
   }
 
-  // public Command autoAimDrive(
-  //     DoubleSupplier xSupplier, DoubleSupplier ySupplier, Translation2d targetTranslation) {
-
-  //   // Create a local PID controller for rotation
-  //   // P=5.0 is a typical starting point for swerve rotation; adjust if it oscillates or is
-  //   // sluggish.
-  //   PIDController thetaController = new PIDController(3.0, 0, 0);
-  //   thetaController.enableContinuousInput(-Math.PI, Math.PI); // Essential for circular
-  // wrap-around
-  //   thetaController.setTolerance(Units.degreesToRadians(1.0)); // 1 degree tolerance
-
-  //   return run(
-  //       () -> {
-  //         // 1. Calculate the rotation required to face the target
-  //         Translation2d currentTranslation = getPose().getTranslation();
-  //         Translation2d delta = targetTranslation.minus(currentTranslation);
-
-  //         // Use atan2 to get the angle from the robot to the target
-  //         Rotation2d targetRotation = new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
-
-  //         // 2. Calculate the rotation speed using PID
-  //         double rotationOutput =
-  //             thetaController.calculate(
-  //                 getPose().getRotation().getRadians(), targetRotation.getRadians());
-
-  //         // 3. Convert supplier values and rotation to ChassisSpeeds
-  //         runVelocity(
-  //             ChassisSpeeds.fromFieldRelativeSpeeds(
-  //                 xSupplier.getAsDouble(), ySupplier.getAsDouble(), rotationOutput,
-  // getRotation()));
-  //       });
-  // }
   public Command autoAimDrive(
-      DoubleSupplier xSupplier, DoubleSupplier ySupplier, Translation2d targetTranslation) {
-    PIDController thetaController = new PIDController(4.0, 0, 0);
-    thetaController.enableContinuousInput(-Math.PI, Math.PI);
+      DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+    
+    var alliance = DriverStation.getAlliance();
+    
+    // Define Alliance Hub Locations
+    Translation2d blueHub = new Translation2d(4.6, 4.0); 
+    Translation2d redHub = new Translation2d(16.54, 4.0);
 
-    // XY Controllers for movement
-    PIDController xController = new PIDController(3.0, 0, 0);
-    PIDController yController = new PIDController(3.0, 0, 0);
+    // Select the correct target
+    Translation2d activeTarget;
+    if (alliance.isPresent() && alliance.get() == Alliance.Red) {
+        activeTarget = redHub;
+    } else {
+        activeTarget = blueHub;
+    }
+    
+    // Create a PID controller for rotation
+    PIDController thetaController = new PIDController(4.0, 0, 0);
+    thetaController.enableContinuousInput(-Math.PI, Math.PI); // Essential for circular
+    // wrap-around
+
+    thetaController.setTolerance(Units.degreesToRadians(1.0)); // 1 degree tolerance
 
     return run(
         () -> {
-          Pose2d currentPose = getPose();
-          Translation2d robotTrans = currentPose.getTranslation();
+          // Calculate the rotation required to face the target
+          Translation2d currentTranslation = getPose().getTranslation();
+          Translation2d delta = activeTarget.minus(currentTranslation);
 
-          // 1. Calculate the Angle to the Target (for rotation)
-          Translation2d delta = targetTranslation.minus(robotTrans);
+          // Use atan2 to get the angle from the robot to the target
           Rotation2d targetRotation = new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
 
-          // 2. Calculate the Point 2m away from Target (The "Shot Point")
-          // We find the direction FROM target TO robot, then extend 2m
-          Translation2d dirFromTarget = robotTrans.minus(targetTranslation);
-          double distance = dirFromTarget.getNorm();
-
-          // Avoid division by zero if we are exactly on the target
-          Translation2d shotPoint;
-          if (distance > 0.1) {
-            shotPoint = targetTranslation.plus(dirFromTarget.times(2.0 / distance));
-          } else {
-            shotPoint = targetTranslation.plus(new Translation2d(2.0, 0)); // Default offset
-          }
-
-          // 3. Calculate Velocities to reach that Shot Point
-          double xVelocity = xController.calculate(robotTrans.getX(), shotPoint.getX());
-          double yVelocity = yController.calculate(robotTrans.getY(), shotPoint.getY());
-
-          // 4. Calculate Rotation
+          // Calculate the rotation speed using PID
           double rotationOutput =
               thetaController.calculate(
-                  currentPose.getRotation().getRadians(), targetRotation.getRadians());
+                  getPose().getRotation().getRadians(), targetRotation.getRadians());
 
-          // 5. Combine with Driver Input (Optional)
-          // Adding suppliers allows the driver to "fight" the auto-align if needed
-          double finalX = xVelocity + (xSupplier.getAsDouble() * 0.5);
-          double finalY = yVelocity + (ySupplier.getAsDouble() * 0.5);
-
+          // Convert supplier values and rotation to ChassisSpeeds
           runVelocity(
-              ChassisSpeeds.fromFieldRelativeSpeeds(finalX, finalY, rotationOutput, getRotation()));
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  xSupplier.getAsDouble(), ySupplier.getAsDouble(), rotationOutput, getRotation()));
         });
   }
+
+  public double getLauncherRPM() {
+    Pose2d currentPose = getPose();
+    Translation2d robotLocation = currentPose.getTranslation();
+
+    var alliance = DriverStation.getAlliance();
+    
+    // Define Alliance Hub Locations
+    Translation2d blueHub = new Translation2d(4.6, 4.0); 
+    Translation2d redHub = new Translation2d(16.54, 4.0);
+
+    // Select the correct target
+    Translation2d activeTarget;
+    if (alliance.isPresent() && alliance.get() == Alliance.Red) {
+        activeTarget = redHub;
+    } else {
+        activeTarget = blueHub;
+    }
+
+    double distance = robotLocation.getDistance(activeTarget);
+
+    double targetRPM = (Math.pow((distance), 2) * 100) - (distance * 100) + 4400;
+
+    SmartDashboard.putNumber("Believed Distance", distance);
+    SmartDashboard.putNumber("Target RPM", targetRPM);
+
+    return targetRPM;
+  }
+
+  // public Command autoAimDrive(
+  //     DoubleSupplier xSupplier, DoubleSupplier ySupplier, Translation2d targetTranslation) {
+  //   PIDController thetaController = new PIDController(5.0, 0, 0);
+  //   thetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+  //   // XY Controllers for movement
+  //   PIDController xController = new PIDController(3.0, 0, 0);
+  //   PIDController yController = new PIDController(3.0, 0, 0);
+
+  //   return run(
+  //       () -> {
+  //         Pose2d currentPose = getPose();
+  //         Translation2d robotTrans = currentPose.getTranslation();
+
+  //         // Calculate the Angle to the Target
+  //         Translation2d delta = targetTranslation.minus(robotTrans);
+  //         Rotation2d targetRotation = new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
+
+  //         // Find the direction FROM target TO robot
+  //         Translation2d dirFromTarget = robotTrans.minus(targetTranslation);
+  //         double distance = dirFromTarget.getNorm();
+
+  //         // Avoid division by zero if we are exactly on the target
+  //         Translation2d shotPoint;
+  //         if (distance > 0.1) {
+  //           shotPoint = targetTranslation.plus(dirFromTarget.times(2.0 / distance));
+  //         } else {
+  //           shotPoint = targetTranslation.plus(new Translation2d(2.0, 0)); // Default offset
+  //         }
+
+  //         // Calculate Velocities to reach that Shot Point
+  //         double xVelocity = xController.calculate(robotTrans.getX(), shotPoint.getX());
+  //         double yVelocity = yController.calculate(robotTrans.getY(), shotPoint.getY());
+
+  //         // Calculate Rotation
+  //         double rotationOutput =
+  //             thetaController.calculate(
+  //                 currentPose.getRotation().getRadians(), targetRotation.getRadians());
+
+  //         // Adding suppliers allows the driver to fight the auto-align
+  //         double finalX = xVelocity + (xSupplier.getAsDouble() * 0.5);
+  //         double finalY = yVelocity + (ySupplier.getAsDouble() * 0.5);
+
+  //         runVelocity(
+  //             ChassisSpeeds.fromFieldRelativeSpeeds(finalX, finalY, rotationOutput,
+  // getRotation()));
+  //       });
+  // }
 }

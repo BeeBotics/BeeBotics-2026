@@ -57,8 +57,8 @@ public class RobotContainer {
   private final IndexRollerSubsystem m_indexRoller = new IndexRollerSubsystem();
   private final HopperRollerSubsystem m_hopperRoller = new HopperRollerSubsystem();
 
-  private Translation2d Hub = new Translation2d(4.6, 4); // Blue
-  //   private Translation2d Hub = new Translation2d(16.54 - 4.6, 4); // Blue
+  //   private Translation2d Hub = new Translation2d(4.6, 4); // Blue
+  private Translation2d Hub = new Translation2d(16.54 - 4.6, 4); // Red
 
   private final Vision vision;
   // Controller
@@ -119,16 +119,16 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "Far Spinup",
         new ShooterCommand(
-                m_shooter, 5000) // needs tuned //4775 for high angle // 5000 for low angle
+                m_shooter, () -> 5000) // needs tuned //4775 for high angle // 5000 for low angle
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
         "Far Spinup2",
         new ShooterCommand(
-                m_shooter, 5600) // needs tuned //4775 for high angle // 5000 for low angle
+                m_shooter, () -> 5600) // needs tuned //4775 for high angle // 5000 for low angle
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
         "Mid Spinup",
-        new ShooterCommand(m_shooter, 4400) // needs tuned
+        new ShooterCommand(m_shooter, () -> 4400) // needs tuned
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
         "Shoot",
@@ -141,7 +141,7 @@ public class RobotContainer {
         "Stop Shooting",
         new IndexRollerCommand(m_indexRoller, 0)
             .alongWith(new HopperRollerCommand(m_hopperRoller, 0))
-            .alongWith(new ShooterCommand(m_shooter, 0)));
+            .alongWith(new ShooterCommand(m_shooter, () -> 0)));
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     // Set up SysId routines
@@ -212,8 +212,7 @@ public class RobotContainer {
         .whileTrue(
             drive.autoAimDrive(
                 () -> -controller.getLeftY(), // Forward/Backward (though PID overrides this)
-                () -> -controller.getLeftX(), // Left/Right (Driver keeps control)
-                Hub // The Hub Translation2d we defined
+                () -> -controller.getLeftX() // Left/Right (Driver keeps control)
                 ));
     // PIDController aimController = new PIDController(0.2, 0.0, 0.0);
     // aimController.enableContinuousInput(-Math.PI, Math.PI);
@@ -249,8 +248,8 @@ public class RobotContainer {
     controller
         .x()
         .whileTrue(
-            new ShooterCommand(m_shooter, 4500)
-                // m_shooter, drive.getMapRPM(RED_HUB)) // 4500 if not using shotmap or auto align
+            // The () -> tells the command to call this function every loop
+            new ShooterCommand(m_shooter, () -> drive.getLauncherRPM())
                 .alongWith(new IntakeRollerCommand(m_intakeRoller, 0.2)));
 
     controller
@@ -264,7 +263,7 @@ public class RobotContainer {
     controller
         .a()
         .whileTrue(
-            new ShooterCommand(m_shooter, 0)
+            new ShooterCommand(m_shooter, () -> 0)
                 .alongWith(new IndexRollerCommand(m_indexRoller, 0))
                 .alongWith(new HopperRollerCommand(m_hopperRoller, 0))
                 .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
@@ -276,7 +275,7 @@ public class RobotContainer {
                 .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 0.08))
                 .alongWith(new IndexRollerCommand(m_indexRoller, 0))
                 .alongWith(new HopperRollerCommand(m_hopperRoller, 0))
-                .alongWith(new ShooterCommand(m_shooter, 0)));
+                .alongWith(new ShooterCommand(m_shooter, () -> 0)));
   }
 
   /**

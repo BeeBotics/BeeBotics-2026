@@ -10,7 +10,6 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -23,8 +22,6 @@ public class ShooterSubsystem extends SubsystemBase {
       leadingShooterMotor.getClosedLoopController();
 
   private final RelativeEncoder leadingShooterEncoder;
-
-  private final PIDController pid;
 
   public ShooterSubsystem() {
 
@@ -44,7 +41,6 @@ public class ShooterSubsystem extends SubsystemBase {
         .cruiseVelocity(5000)
         .maxAcceleration(20000)
         .allowedProfileError(1);
-    ;
 
     followingMotorConfig
         .smartCurrentLimit(60)
@@ -57,8 +53,6 @@ public class ShooterSubsystem extends SubsystemBase {
         followingMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     leadingShooterEncoder = leadingShooterMotor.getEncoder();
-
-    pid = new PIDController(.0001, 0, 0); // Unused currently
   }
 
   public void setTargetVelocity(double targetRPM) {
@@ -73,11 +67,6 @@ public class ShooterSubsystem extends SubsystemBase {
   // Returns arm Rotation
   public double getSpeed() {
     return leadingShooterEncoder.getVelocity();
-  }
-
-  public void setSpeed(double targetSpeed) {
-    double output = pid.calculate(getSpeed(), targetSpeed);
-    leadingShooterMotor.set(output);
   }
 
   @Override
