@@ -382,125 +382,78 @@ public class Drive extends SubsystemBase {
     return maxSpeedMetersPerSec / driveBaseRadius;
   }
 
-  public Command autoAimDrive(
-      DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
-    
-    var alliance = DriverStation.getAlliance();
-    
-    // Define Alliance Hub Locations
-    Translation2d blueHub = new Translation2d(4.6, 4.0); 
-    Translation2d redHub = new Translation2d(16.54, 4.0);
-
-    // Select the correct target
-    Translation2d activeTarget;
-    if (alliance.isPresent() && alliance.get() == Alliance.Red) {
-        activeTarget = redHub;
-    } else {
-        activeTarget = blueHub;
-    }
-    
-    // Create a PID controller for rotation
-    PIDController thetaController = new PIDController(4.0, 0, 0);
-    thetaController.enableContinuousInput(-Math.PI, Math.PI); // Essential for circular
-    // wrap-around
-
-    thetaController.setTolerance(Units.degreesToRadians(1.0)); // 1 degree tolerance
-
-    return run(
-        () -> {
-          // Calculate the rotation required to face the target
-          Translation2d currentTranslation = getPose().getTranslation();
-          Translation2d delta = activeTarget.minus(currentTranslation);
-
-          // Use atan2 to get the angle from the robot to the target
-          Rotation2d targetRotation = new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
-
-          // Calculate the rotation speed using PID
-          double rotationOutput =
-              thetaController.calculate(
-                  getPose().getRotation().getRadians(), targetRotation.getRadians());
-
-          // Convert supplier values and rotation to ChassisSpeeds
-          runVelocity(
-              ChassisSpeeds.fromFieldRelativeSpeeds(
-                  xSupplier.getAsDouble(), ySupplier.getAsDouble(), rotationOutput, getRotation()));
-        });
-  }
-
   public double getLauncherRPM() {
     Pose2d currentPose = getPose();
     Translation2d robotLocation = currentPose.getTranslation();
 
     var alliance = DriverStation.getAlliance();
-    
+
     // Define Alliance Hub Locations
-    Translation2d blueHub = new Translation2d(4.6, 4.0); 
-    Translation2d redHub = new Translation2d(16.54, 4.0);
+    Translation2d blueHub = new Translation2d(4.6, 4.0);
+    Translation2d redHub = new Translation2d(16.54 - 4.6, 4.0);
 
     // Select the correct target
     Translation2d activeTarget;
     if (alliance.isPresent() && alliance.get() == Alliance.Red) {
-        activeTarget = redHub;
+      activeTarget = redHub;
     } else {
-        activeTarget = blueHub;
+      activeTarget = blueHub;
     }
 
     double distance = robotLocation.getDistance(activeTarget);
 
-    double targetRPM = (Math.pow((distance), 2) * 100) - (distance * 100) + 4400;
+    double targetRPM = (Math.pow((distance), 2) * 100) - (distance * 100) + 4450;
 
-    SmartDashboard.putNumber("Believed Distance", distance);
+    SmartDashboard.putNumber("Target Distance", distance);
     SmartDashboard.putNumber("Target RPM", targetRPM);
 
     return targetRPM;
   }
 
-  // public Command autoAimDrive(
-  //     DoubleSupplier xSupplier, DoubleSupplier ySupplier, Translation2d targetTranslation) {
-  //   PIDController thetaController = new PIDController(5.0, 0, 0);
-  //   thetaController.enableContinuousInput(-Math.PI, Math.PI);
+  public Command autoAimDrive(DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
 
-  //   // XY Controllers for movement
-  //   PIDController xController = new PIDController(3.0, 0, 0);
-  //   PIDController yController = new PIDController(3.0, 0, 0);
+    // Setup PID for rotation
+    PIDController thetaController = new PIDController(4.5, 0, 0);
+    thetaController.enableContinuousInput(-Math.PI, Math.PI);
+    thetaController.setTolerance(Units.degreesToRadians(1.0));
 
-  //   return run(
-  //       () -> {
-  //         Pose2d currentPose = getPose();
-  //         Translation2d robotTrans = currentPose.getTranslation();
+    return run(
+        () -> {
+          // Get the target based on Alliance
+          var alliance = DriverStation.getAlliance();
+          Translation2d blueHub = new Translation2d(4.6, 4.0);
+          Translation2d redHub = new Translation2d(16.54 - 4.6, 4.0);
+          Translation2d realTarget =
+              (alliance.isPresent() && alliance.get() == Alliance.Red) ? redHub : blueHub;
 
-  //         // Calculate the Angle to the Target
-  //         Translation2d delta = targetTranslation.minus(robotTrans);
-  //         Rotation2d targetRotation = new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
+          // Calculate Time of Flight
+          double distance = getPose().getTranslation().getDistance(realTarget);
+          double timeOfFlight = distance / 1.5; // Needs to be tuned
 
-  //         // Find the direction FROM target TO robot
-  //         Translation2d dirFromTarget = robotTrans.minus(targetTranslation);
-  //         double distance = dirFromTarget.getNorm();
+          // Calculate Virtual Target
+          // Subtract the robot's field-relative velocity over the time of flight
+          ChassisSpeeds fieldSpeeds = getFieldRelativeSpeeds();
+          Translation2d virtualTarget =
+              new Translation2d(
+                  realTarget.getX() - (fieldSpeeds.vxMetersPerSecond * timeOfFlight),
+                  realTarget.getY() - (fieldSpeeds.vyMetersPerSecond * timeOfFlight));
 
-  //         // Avoid division by zero if we are exactly on the target
-  //         Translation2d shotPoint;
-  //         if (distance > 0.1) {
-  //           shotPoint = targetTranslation.plus(dirFromTarget.times(2.0 / distance));
-  //         } else {
-  //           shotPoint = targetTranslation.plus(new Translation2d(2.0, 0)); // Default offset
-  //         }
+          // Aim at the VIRTUAL target instead of the real one
+          Translation2d currentTranslation = getPose().getTranslation();
+          Translation2d delta = virtualTarget.minus(currentTranslation);
+          Rotation2d targetRotation = new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
 
-  //         // Calculate Velocities to reach that Shot Point
-  //         double xVelocity = xController.calculate(robotTrans.getX(), shotPoint.getX());
-  //         double yVelocity = yController.calculate(robotTrans.getY(), shotPoint.getY());
+          double rotationOutput =
+              thetaController.calculate(
+                  getPose().getRotation().getRadians(), targetRotation.getRadians());
 
-  //         // Calculate Rotation
-  //         double rotationOutput =
-  //             thetaController.calculate(
-  //                 currentPose.getRotation().getRadians(), targetRotation.getRadians());
+          // Drive
+          runVelocity(
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  xSupplier.getAsDouble(), ySupplier.getAsDouble(), rotationOutput, getRotation()));
 
-  //         // Adding suppliers allows the driver to fight the auto-align
-  //         double finalX = xVelocity + (xSupplier.getAsDouble() * 0.5);
-  //         double finalY = yVelocity + (ySupplier.getAsDouble() * 0.5);
-
-  //         runVelocity(
-  //             ChassisSpeeds.fromFieldRelativeSpeeds(finalX, finalY, rotationOutput,
-  // getRotation()));
-  //       });
-  // }
+          // Log for AdvantageScope/SmartDashboard
+          Logger.recordOutput("Drive/VirtualTarget", virtualTarget);
+        });
+  }
 }

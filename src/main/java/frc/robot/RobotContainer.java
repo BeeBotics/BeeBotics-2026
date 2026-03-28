@@ -211,8 +211,8 @@ public class RobotContainer {
         .rightBumper()
         .whileTrue(
             drive.autoAimDrive(
-                () -> -controller.getLeftY(), // Forward/Backward (though PID overrides this)
-                () -> -controller.getLeftX() // Left/Right (Driver keeps control)
+                () -> controller.getLeftY(), // Forward/Backward (though PID overrides this)
+                () -> controller.getLeftX() // Left/Right (Driver keeps control)
                 ));
     // PIDController aimController = new PIDController(0.2, 0.0, 0.0);
     // aimController.enableContinuousInput(-Math.PI, Math.PI);
