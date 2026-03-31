@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ShooterSubsystem extends SubsystemBase {
   private final SparkMax leadingShooterMotor =
-      new SparkMax(13, MotorType.kBrushless); // Set the correct canID;
+      new SparkMax(13, MotorType.kBrushless);
   private final SparkMax followingShooterMotor = new SparkMax(14, MotorType.kBrushless);
 
   private SparkClosedLoopController flywheelController =

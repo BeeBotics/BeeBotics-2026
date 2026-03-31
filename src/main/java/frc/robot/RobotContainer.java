@@ -11,7 +11,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,10 +34,6 @@ import frc.robot.subsystems.drive.GyroIONavX;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSpark;
-import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOLimelight;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -57,10 +52,6 @@ public class RobotContainer {
   private final IndexRollerSubsystem m_indexRoller = new IndexRollerSubsystem();
   private final HopperRollerSubsystem m_hopperRoller = new HopperRollerSubsystem();
 
-  //   private Translation2d Hub = new Translation2d(4.6, 4); // Blue
-  private Translation2d Hub = new Translation2d(16.54 - 4.6, 4); // Red
-
-  private final Vision vision;
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
 
@@ -80,10 +71,6 @@ public class RobotContainer {
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3));
 
-        vision =
-            new Vision(
-                drive::addVisionMeasurement,
-                new VisionIOLimelight(VisionConstants.camera0Name, drive::getRotation));
         break;
 
       case SIM:
@@ -95,10 +82,6 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
-        vision =
-            new Vision(
-                drive::addVisionMeasurement,
-                new VisionIOLimelight(VisionConstants.camera0Name, drive::getRotation));
         break;
 
       default:
@@ -110,25 +93,24 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-
-        vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
         break;
     }
 
     // Declare Named Commands
+    NamedCommands.registerCommand("Aim", drive.autoAim());
+    NamedCommands.registerCommand(
+        "Spinup", new ShooterCommand(m_shooter, () -> drive.getLauncherRPM()));
     NamedCommands.registerCommand(
         "Far Spinup",
-        new ShooterCommand(
-                m_shooter, () -> 5000) // needs tuned //4775 for high angle // 5000 for low angle
+        new ShooterCommand(m_shooter, () -> 5000) // 5000 for low angle
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
         "Far Spinup2",
-        new ShooterCommand(
-                m_shooter, () -> 5600) // needs tuned //4775 for high angle // 5000 for low angle
+        new ShooterCommand(m_shooter, () -> 5600) // 5000 for low angle
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
         "Mid Spinup",
-        new ShooterCommand(m_shooter, () -> 4400) // needs tuned
+        new ShooterCommand(m_shooter, () -> 4400)
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
         "Shoot",
@@ -171,11 +153,6 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    // if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-    //   Hub = new Translation2d(16.54 - 4.6, 4); // Red Hub
-    // } else {
-    //   Hub = new Translation2d(4.6, 4); // Blue Hub
-    // }
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
@@ -184,55 +161,15 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
-    // Lock to 0° when A button is held
-    // controller
-    //     .rightBumper()
-    //     .whileTrue(
-    //         DriveCommands.joystickDrive(
-    //             drive,
-    //             () -> -(LimelightHelpers.getTY("") + 7.5) * 0.3,
-    //             () -> -controller.getLeftX(),
-    //             () -> -(LimelightHelpers.getTX("") + 8) * 0.04));
-
-    // Define your targets (e.g., Center of the Speaker)
-    // final Translation2d BLUE_HUB = new Translation2d(4.6, 4);
-    // final Translation2d RED_HUB = new Translation2d(16.54 - 4.6, 4);
-
-    // controller
-    //     .rightBumper()
-    //     .whileTrue(
-    //         drive.autoAimDrive(
-    //             () -> -controller.getLeftY() * drive.getMaxLinearSpeedMetersPerSec(),
-    //             () -> -controller.getLeftX() * drive.getMaxLinearSpeedMetersPerSec(),
-    //             DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
-    //                 ? RED_HUB
-    //                 : RED_HUB));
     controller
         .rightBumper()
         .whileTrue(
-            drive.autoAimDrive(
-                () -> controller.getLeftY(), // Forward/Backward (though PID overrides this)
-                () -> controller.getLeftX() // Left/Right (Driver keeps control)
-                ));
-    // PIDController aimController = new PIDController(0.2, 0.0, 0.0);
-    // aimController.enableContinuousInput(-Math.PI, Math.PI);
-    // controller
-    //     .rightBumper()
-    //     .whileTrue(
-    //         Commands.startRun(
-    //             () -> {
-    //               aimController.reset();
-    //             },
-    //             () -> {
-    //               DriveCommands.joystickDriveAtAngle(
-    //                 drive,
-    //               () -> -controller.getLeftX(),
-    //               () -> -controller.getLeftY(),
-    //               () -> vision.getTargetX(0));
-    //             },
-    //             drive));
-    // Switch to X pattern when X button is pressed
-    // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+            drive
+                .autoAimDrive(
+                    () -> controller.getLeftY(), // Forward/Backward (though PID overrides this)
+                    () -> controller.getLeftX() // Left/Right (Driver keeps control)
+                    )
+                .alongWith(new ShooterCommand(m_shooter, () -> drive.getLauncherRPM())));
 
     // Reset gyro to 0° when B button is pressed
     controller
@@ -249,7 +186,7 @@ public class RobotContainer {
         .x()
         .whileTrue(
             // The () -> tells the command to call this function every loop
-            new ShooterCommand(m_shooter, () -> drive.getLauncherRPM())
+            new ShooterCommand(m_shooter, () -> 4300)
                 .alongWith(new IntakeRollerCommand(m_intakeRoller, 0.2)));
 
     controller
@@ -272,7 +209,7 @@ public class RobotContainer {
         .b()
         .whileTrue(
             new IntakeRollerCommand(m_intakeRoller, 1)
-                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 0.08))
+                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 0.09))
                 .alongWith(new IndexRollerCommand(m_indexRoller, 0))
                 .alongWith(new HopperRollerCommand(m_hopperRoller, 0))
                 .alongWith(new ShooterCommand(m_shooter, () -> 0)));

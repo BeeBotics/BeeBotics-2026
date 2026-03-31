@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IndexRollerSubsystem extends SubsystemBase {
   private final SparkFlex indexMotor =
-      new SparkFlex(12, MotorType.kBrushless); // Set the correct canID
+      new SparkFlex(12, MotorType.kBrushless);
 
   private final RelativeEncoder encoder;
 
@@ -29,7 +29,7 @@ public class IndexRollerSubsystem extends SubsystemBase {
         .idleMode(IdleMode.kCoast)
         .inverted(false)
         .closedLoop
-        .p(0.0003)
+        .p(0.0002)
         .i(0)
         .d(0)
         .maxMotion

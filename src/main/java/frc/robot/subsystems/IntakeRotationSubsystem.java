@@ -21,7 +21,7 @@ public class IntakeRotationSubsystem extends SubsystemBase {
   private final double COUNTS_PER_INCH = 42;
 
   public IntakeRotationSubsystem() {
-    leadingRotationMotor = new SparkMax(10, MotorType.kBrushless); // Set the correct canID
+    leadingRotationMotor = new SparkMax(10, MotorType.kBrushless);
     followingRotationMotor = new SparkMax(11, MotorType.kBrushless);
 
     SparkMaxConfig leadingMotorConfig = new SparkMaxConfig();

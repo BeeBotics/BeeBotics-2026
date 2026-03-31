@@ -26,6 +26,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -56,13 +57,21 @@ public class Drive extends SubsystemBase {
   static final Lock odometryLock = new ReentrantLock();
   private final GyroIO gyroIO;
   private LimelightHelpers.PoseEstimate poseEstimate;
-  private Pose2d cameraPose;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private final SysIdRoutine sysId;
 
-  private Translation2d Hub;
-  double distance = 0;
+  private static final InterpolatingDoubleTreeMap shotMap = new InterpolatingDoubleTreeMap();
+
+  static {
+    // shotMap.put(Distance_Meters, Target_RPM);
+    shotMap.put(1.5, 4350.0);
+    shotMap.put(2.0, 4500.0);
+    shotMap.put(2.5, 4800.0);
+    shotMap.put(3.0, 4900.0);
+    shotMap.put(4.0, 5600.0);
+    shotMap.put(5.0, 6000.0);
+  }
 
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
@@ -105,7 +114,6 @@ public class Drive extends SubsystemBase {
     // Start odometry thread
     SparkOdometryThread.getInstance().start();
 
-    // LimelightHelpers.SetIMUMode(getName(), 0);
     // Configure AutoBuilder for PathPlanner
     AutoBuilder.configure(
         this::getPose,
@@ -126,7 +134,6 @@ public class Drive extends SubsystemBase {
         (targetPose) -> {
           Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
         });
-
     // Configure SysId
     sysId =
         new SysIdRoutine(
@@ -193,27 +200,33 @@ public class Drive extends SubsystemBase {
       // Apply update
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
       // Update gyro alert
-      // LimelightHelpers.SetRobotOrientation("", rawGyroRotation.getDegrees(), 0, 0, 0, 0, 0);
-      poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("");
+      LimelightHelpers.SetRobotOrientation(
+          "", poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+      poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
 
       if (poseEstimate.tagCount > 0) {
         Pose2d visionPose = poseEstimate.pose;
         double distToTag = poseEstimate.avgTagDist;
+        double yawVelocity = Math.abs(gyroInputs.yawVelocityRadPerSec);
 
         boolean rejectUpdate = false;
 
-        if (distToTag > 3.0) {
+        if (distToTag > 3.5) {
           rejectUpdate = true;
         }
-        if (DriverStation.isAutonomous()) {
+        if (yawVelocity > Units.degreesToRadians(360)) {
+          rejectUpdate = true;
+        }
+        if (DriverStation.isAutonomous() && distToTag >= 2.5) {
           rejectUpdate = true;
         }
         if (!rejectUpdate) {
           // // Small numbers (0.1) = Trust vision a lot. Large numbers (2.0) = Trust encoders more.
-          poseEstimator.addVisionMeasurement(visionPose, poseEstimate.timestampSeconds);
+          poseEstimator.addVisionMeasurement(
+              visionPose, poseEstimate.timestampSeconds, VecBuilder.fill(0.1, 0.1, 999999999));
         }
       }
-      // // Adding field map to smart dashboard
+      // Adding field map to smart dashboard
       field2d.setRobotPose(getPose());
       SmartDashboard.putData(field2d);
     }
@@ -356,20 +369,13 @@ public class Drive extends SubsystemBase {
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
   }
 
-  /** Adds a new timestamped vision measurement to the pose estimator. */
+  /** Adds a new timestamped vision measurement. */
   public void addVisionMeasurement(
       Pose2d visionRobotPoseMeters,
       double timestampSeconds,
       Matrix<N3, N1> visionMeasurementStdDevs) {
-    LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
-    // CRITICAL: You must lock the thread before updating the estimator
-    odometryLock.lock();
-    try {
-      poseEstimator.addVisionMeasurement(
-          visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
-    } finally {
-      odometryLock.unlock();
-    }
+    poseEstimator.addVisionMeasurement(
+        visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
   }
 
   /** Returns the maximum linear speed in meters per sec. */
@@ -382,28 +388,62 @@ public class Drive extends SubsystemBase {
     return maxSpeedMetersPerSec / driveBaseRadius;
   }
 
+  public Command autoAim() {
+    PIDController thetaController = new PIDController(4.5, 0, 0); // Match your teleop gains
+    thetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+    return run(
+        () -> {
+          // Get the current translation speeds from PathPlanner's active setpoint
+          ChassisSpeeds desiredSpeeds = getChassisSpeeds();
+
+          // Get the target (Blue/Red Hub)
+          var alliance = DriverStation.getAlliance();
+          Translation2d target =
+              (alliance.isPresent() && alliance.get() == Alliance.Red)
+                  ? new Translation2d(16.54 - 4.6, 4.0)
+                  : new Translation2d(4.6, 4.0);
+
+          // Calculate target rotation
+          Translation2d currentTranslation = getPose().getTranslation();
+          Translation2d delta = target.minus(currentTranslation);
+          Rotation2d targetRotation = new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
+
+          // Calculate PID output for rotation
+          double rotationOutput =
+              thetaController.calculate(
+                  getPose().getRotation().getRadians(), targetRotation.getRadians());
+          // Drive
+          runVelocity(
+              new ChassisSpeeds(
+                  desiredSpeeds.vxMetersPerSecond,
+                  desiredSpeeds.vyMetersPerSecond,
+                  rotationOutput));
+        });
+  }
   public double getLauncherRPM() {
     Pose2d currentPose = getPose();
     Translation2d robotLocation = currentPose.getTranslation();
 
     var alliance = DriverStation.getAlliance();
 
-    // Define Alliance Hub Locations
+    // Define Alliance Hub Locations (Check if these match your 2026 field)
     Translation2d blueHub = new Translation2d(4.6, 4.0);
     Translation2d redHub = new Translation2d(16.54 - 4.6, 4.0);
 
-    // Select the correct target
-    Translation2d activeTarget;
-    if (alliance.isPresent() && alliance.get() == Alliance.Red) {
-      activeTarget = redHub;
-    } else {
-      activeTarget = blueHub;
-    }
+    // Select the correct target based on alliance
+    Translation2d activeTarget =
+        (alliance.isPresent() && alliance.get() == Alliance.Red) ? redHub : blueHub;
 
+    // Get target distance
     double distance = robotLocation.getDistance(activeTarget);
 
-    double targetRPM = (Math.pow((distance), 2) * 100) - (distance * 100) + 4450;
+    // This looks up the distance in the map and interpolates between points
+    double targetRPM = shotMap.get(distance);
 
+    // Display info on SmartDashboard/AdvantageKit
+    Logger.recordOutput("Drive/TargetDistanceMeters", distance);
+    Logger.recordOutput("Drive/TargetRPM", targetRPM);
     SmartDashboard.putNumber("Target Distance", distance);
     SmartDashboard.putNumber("Target RPM", targetRPM);
 
@@ -413,7 +453,7 @@ public class Drive extends SubsystemBase {
   public Command autoAimDrive(DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
 
     // Setup PID for rotation
-    PIDController thetaController = new PIDController(4.5, 0, 0);
+    PIDController thetaController = new PIDController(4.0, 0, 0);
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
     thetaController.setTolerance(Units.degreesToRadians(1.0));
 
@@ -423,6 +463,7 @@ public class Drive extends SubsystemBase {
           var alliance = DriverStation.getAlliance();
           Translation2d blueHub = new Translation2d(4.6, 4.0);
           Translation2d redHub = new Translation2d(16.54 - 4.6, 4.0);
+
           Translation2d realTarget =
               (alliance.isPresent() && alliance.get() == Alliance.Red) ? redHub : blueHub;
 
