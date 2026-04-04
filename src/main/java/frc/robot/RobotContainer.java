@@ -167,12 +167,9 @@ public class RobotContainer {
         .rightBumper()
         .whileTrue(
             drive
-                .autoAimDrive(
-                    () ->
-                        controller.getLeftY() * 0.6,
-                    () -> controller.getLeftX() * 0.6
-                    )
-                .alongWith(new ShooterCommand(m_shooter, () -> drive.getLauncherRPM())));
+                .autoAimDrive(() -> controller.getLeftY(), () -> controller.getLeftX())
+                .alongWith(new ShooterCommand(m_shooter, () -> drive.getLauncherRPM()))
+                .repeatedly());
 
     // Reset gyro to 0° when B button is pressed
     controller

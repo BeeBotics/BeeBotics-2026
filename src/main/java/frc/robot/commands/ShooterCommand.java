@@ -26,6 +26,6 @@ public class ShooterCommand extends Command {
   @Override
   public boolean isFinished() {
     // This command will end once the shooter is above a certian speed
-    return m_shooter.getRPM() > 2500;
+    return m_shooter.getRPM() - rpmSupplier.getAsDouble() > 3500;
   }
 }
