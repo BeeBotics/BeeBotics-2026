@@ -65,12 +65,24 @@ public class Drive extends SubsystemBase {
 
   static {
     // shotMap.put(Distance_Meters, Target_RPM);
-    shotMap.put(1.5, 4350.0);
-    shotMap.put(2.0, 4500.0);
-    shotMap.put(2.5, 4800.0);
-    shotMap.put(3.0, 4900.0);
-    shotMap.put(4.0, 5600.0);
-    shotMap.put(5.0, 6000.0);
+    shotMap.put(1.5, 4500.0);
+    shotMap.put(2.0, 4600.0);
+    shotMap.put(2.5, 5100.0);
+    shotMap.put(3.0, 5600.0);
+    shotMap.put(4.0, 6400.0);
+    shotMap.put(5.0, 7000.0);
+  }
+
+  private static final InterpolatingDoubleTreeMap TOFMap = new InterpolatingDoubleTreeMap();
+
+  static {
+    // shotMap.put(Distance_Meters, Target_RPM);
+    TOFMap.put(1.5, 0.7);
+    TOFMap.put(2.0, 0.9);
+    TOFMap.put(2.5, 1.1);
+    TOFMap.put(3.0, 1.3);
+    TOFMap.put(4.0, 1.5);
+    TOFMap.put(4.5, 1.7);
   }
 
   private final Alert gyroDisconnectedAlert =
@@ -407,7 +419,9 @@ public class Drive extends SubsystemBase {
           // Calculate target rotation
           Translation2d currentTranslation = getPose().getTranslation();
           Translation2d delta = target.minus(currentTranslation);
-          Rotation2d targetRotation = new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
+          Rotation2d angleToTarget = new Rotation2d(delta.getX(), delta.getY());
+
+          Rotation2d targetRotation = angleToTarget.plus(Rotation2d.fromRadians(Math.PI));
 
           // Calculate PID output for rotation
           double rotationOutput =
@@ -421,30 +435,37 @@ public class Drive extends SubsystemBase {
                   rotationOutput));
         });
   }
+
   public double getLauncherRPM() {
-    Pose2d currentPose = getPose();
-    Translation2d robotLocation = currentPose.getTranslation();
-
+    // Get the target based on Alliance
     var alliance = DriverStation.getAlliance();
-
-    // Define Alliance Hub Locations (Check if these match your 2026 field)
     Translation2d blueHub = new Translation2d(4.6, 4.0);
     Translation2d redHub = new Translation2d(16.54 - 4.6, 4.0);
 
-    // Select the correct target based on alliance
-    Translation2d activeTarget =
+    Translation2d realTarget =
         (alliance.isPresent() && alliance.get() == Alliance.Red) ? redHub : blueHub;
 
-    // Get target distance
-    double distance = robotLocation.getDistance(activeTarget);
+    // Calculate Time of Flight
+    double distance = getPose().getTranslation().getDistance(realTarget);
+    double timeOfFlight = TOFMap.get(distance);
+
+    // Calculate Virtual Target
+    // Subtract the robot's field-relative velocity over the time of flight
+    ChassisSpeeds fieldSpeeds = getFieldRelativeSpeeds();
+    Translation2d virtualTarget =
+        new Translation2d(
+            realTarget.getX() - (fieldSpeeds.vxMetersPerSecond * timeOfFlight),
+            realTarget.getY() - (fieldSpeeds.vyMetersPerSecond * timeOfFlight));
+    double effectiveDistance = getPose().getTranslation().getDistance(virtualTarget);
 
     // This looks up the distance in the map and interpolates between points
-    double targetRPM = shotMap.get(distance);
+    double targetRPM = shotMap.get(effectiveDistance);
 
     // Display info on SmartDashboard/AdvantageKit
     Logger.recordOutput("Drive/TargetDistanceMeters", distance);
     Logger.recordOutput("Drive/TargetRPM", targetRPM);
     SmartDashboard.putNumber("Target Distance", distance);
+    SmartDashboard.putNumber("Effective Distance", effectiveDistance);
     SmartDashboard.putNumber("Target RPM", targetRPM);
 
     return targetRPM;
@@ -469,7 +490,7 @@ public class Drive extends SubsystemBase {
 
           // Calculate Time of Flight
           double distance = getPose().getTranslation().getDistance(realTarget);
-          double timeOfFlight = distance / 1.5; // Needs to be tuned
+          double timeOfFlight = TOFMap.get(distance); // Needs to be tuned
 
           // Calculate Virtual Target
           // Subtract the robot's field-relative velocity over the time of flight
@@ -482,7 +503,9 @@ public class Drive extends SubsystemBase {
           // Aim at the VIRTUAL target instead of the real one
           Translation2d currentTranslation = getPose().getTranslation();
           Translation2d delta = virtualTarget.minus(currentTranslation);
-          Rotation2d targetRotation = new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
+          Rotation2d angleToTarget = new Rotation2d(delta.getX(), delta.getY());
+
+          Rotation2d targetRotation = angleToTarget.plus(Rotation2d.fromRadians(Math.PI));
 
           double rotationOutput =
               thetaController.calculate(

@@ -23,7 +23,7 @@ public class MoveIntakeToPositionCommand extends Command {
   @Override
   public boolean isFinished() {
     // End the command when the arm reaches the desired position
-    // return Math.abs(Intake.getRotation() - position) < 0.06;
-    return true;
+    return Math.abs(Intake.getRotation() - position) < 0.04;
+    // return true;
   }
 }

@@ -22,4 +22,10 @@ public class ShooterCommand extends Command {
   public void execute() {
     m_shooter.setTargetVelocity(rpmSupplier.getAsDouble());
   }
+
+  @Override
+  public boolean isFinished() {
+    // This command will end once the shooter is above a certian speed
+    return m_shooter.getRPM() > 2500;
+  }
 }

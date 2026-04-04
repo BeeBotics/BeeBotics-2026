@@ -118,12 +118,13 @@ public class RobotContainer {
             .alongWith(new HopperRollerCommand(m_hopperRoller, 6000)));
     NamedCommands.registerCommand("Intake", new IntakeRollerCommand(m_intakeRoller, 1));
     NamedCommands.registerCommand(
-        "Deploy Intake", new MoveIntakeToPositionCommand(m_intakeRotation, 0.07));
+        "Deploy Intake", new MoveIntakeToPositionCommand(m_intakeRotation, 0.38));
     NamedCommands.registerCommand(
         "Stop Shooting",
         new IndexRollerCommand(m_indexRoller, 0)
             .alongWith(new HopperRollerCommand(m_hopperRoller, 0))
             .alongWith(new ShooterCommand(m_shooter, () -> 0)));
+    NamedCommands.registerCommand("Stop Intake", new IntakeRollerCommand(m_intakeRoller, 0));
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     // Set up SysId routines
@@ -161,13 +162,15 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
+    // Right Bumper: Auto-Aim, Spin up shooter, and Index ONLY when aligned
     controller
         .rightBumper()
         .whileTrue(
             drive
                 .autoAimDrive(
-                    () -> controller.getLeftY(), // Forward/Backward (though PID overrides this)
-                    () -> controller.getLeftX() // Left/Right (Driver keeps control)
+                    () ->
+                        controller.getLeftY() * 0.6,
+                    () -> controller.getLeftX() * 0.6
                     )
                 .alongWith(new ShooterCommand(m_shooter, () -> drive.getLauncherRPM())));
 
@@ -186,16 +189,13 @@ public class RobotContainer {
         .x()
         .whileTrue(
             // The () -> tells the command to call this function every loop
-            new ShooterCommand(m_shooter, () -> 4300)
-                .alongWith(new IntakeRollerCommand(m_intakeRoller, 0.2)));
+            new ShooterCommand(m_shooter, () -> drive.getLauncherRPM()));
 
     controller
         .y()
         .whileTrue(
             new IndexRollerCommand(m_indexRoller, 8000)
-                .alongWith(new HopperRollerCommand(m_hopperRoller, 7000))
-            // .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 0.0))
-            );
+                .alongWith(new HopperRollerCommand(m_hopperRoller, 7000)));
 
     controller
         .a()
@@ -209,10 +209,7 @@ public class RobotContainer {
         .b()
         .whileTrue(
             new IntakeRollerCommand(m_intakeRoller, 1)
-                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 0.09))
-                .alongWith(new IndexRollerCommand(m_indexRoller, 0))
-                .alongWith(new HopperRollerCommand(m_hopperRoller, 0))
-                .alongWith(new ShooterCommand(m_shooter, () -> 0)));
+                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 0.4)));
   }
 
   /**

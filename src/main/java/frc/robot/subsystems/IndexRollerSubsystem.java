@@ -14,8 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IndexRollerSubsystem extends SubsystemBase {
-  private final SparkFlex indexMotor =
-      new SparkFlex(12, MotorType.kBrushless);
+  private final SparkFlex indexMotor = new SparkFlex(12, MotorType.kBrushless);
 
   private final RelativeEncoder encoder;
 

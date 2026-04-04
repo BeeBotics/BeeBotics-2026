@@ -1,0 +1,102 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.63796005706134,
+        "y": 2.8769900142653353
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.07042796005706,
+        "y": 2.3465049928673327
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.868901569186875,
+        "y": 4.00265335235378
+      },
+      "prevControl": {
+        "x": 8.222359625538182,
+        "y": 4.449126686692275
+      },
+      "nextControl": {
+        "x": 7.377232524964336,
+        "y": 3.3815977175463625
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.3,
+        "y": 2.56
+      },
+      "prevControl": {
+        "x": 6.612296718972897,
+        "y": 2.404736091298147
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.8315565031983017,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 1.6460554371002039,
+      "rotationDegrees": -179.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "Deploy Intake",
+      "waypointRelativePos": 0.3,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Intake"
+        }
+      }
+    },
+    {
+      "name": "Stop Intake",
+      "waypointRelativePos": 1.6799459824442937,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Stop Intake"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 4.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -136.0
+  },
+  "reversed": false,
+  "folder": "Neutral Center Paths",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": false
+}

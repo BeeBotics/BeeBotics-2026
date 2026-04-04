@@ -14,8 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ShooterSubsystem extends SubsystemBase {
-  private final SparkMax leadingShooterMotor =
-      new SparkMax(13, MotorType.kBrushless);
+  private final SparkMax leadingShooterMotor = new SparkMax(13, MotorType.kBrushless);
   private final SparkMax followingShooterMotor = new SparkMax(14, MotorType.kBrushless);
 
   private SparkClosedLoopController flywheelController =
@@ -33,13 +32,13 @@ public class ShooterSubsystem extends SubsystemBase {
         .idleMode(IdleMode.kCoast)
         .inverted(true)
         .closedLoop
-        .p(0.0003)
+        .p(0.00020)
         .i(0)
         .d(0)
         .maxMotion
         // Set MAXMotion parameters for MAXMotion Velocity control
         .cruiseVelocity(5000)
-        .maxAcceleration(20000)
+        .maxAcceleration(25000)
         .allowedProfileError(1);
 
     followingMotorConfig
@@ -60,22 +59,14 @@ public class ShooterSubsystem extends SubsystemBase {
         targetRPM, ControlType.kMAXMotionVelocityControl, ClosedLoopSlot.kSlot0);
   }
 
-  public void setTargetPower(double targetPower) {
-    leadingShooterMotor.set(targetPower);
-  }
-
   // Returns arm Rotation
-  public double getSpeed() {
+  public double getRPM() {
     return leadingShooterEncoder.getVelocity();
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
-    // Good place to update SmartDashboard values if needed
-    // double pidOutput = pid.calculate(getSpeed());
-    // leadingShooterMotor.set(pidOutput);
-    SmartDashboard.putNumber("Speed", getSpeed());
+    SmartDashboard.putNumber("Speed", getRPM());
     SmartDashboard.putNumber("Shooter Voltage", leadingShooterMotor.getAppliedOutput());
   }
 }

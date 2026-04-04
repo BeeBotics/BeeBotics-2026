@@ -12,8 +12,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class HopperRollerSubsystem extends SubsystemBase {
-  private final SparkMax hopperMotor =
-      new SparkMax(16, MotorType.kBrushless);
+  private final SparkMax hopperMotor = new SparkMax(16, MotorType.kBrushless);
 
   private SparkClosedLoopController hopperController = hopperMotor.getClosedLoopController();
 
