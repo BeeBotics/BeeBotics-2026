@@ -28,7 +28,7 @@ public class IndexRollerSubsystem extends SubsystemBase {
         .idleMode(IdleMode.kCoast)
         .inverted(false)
         .closedLoop
-        .p(0.0002)
+        .p(0.0003)
         .i(0)
         .d(0)
         .maxMotion

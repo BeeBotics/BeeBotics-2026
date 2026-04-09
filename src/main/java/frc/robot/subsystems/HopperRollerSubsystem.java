@@ -20,7 +20,7 @@ public class HopperRollerSubsystem extends SubsystemBase {
     SparkMaxConfig motorConfig = new SparkMaxConfig();
 
     motorConfig
-        .smartCurrentLimit(60)
+        .smartCurrentLimit(80)
         .idleMode(IdleMode.kCoast)
         .inverted(false)
         .closedLoop

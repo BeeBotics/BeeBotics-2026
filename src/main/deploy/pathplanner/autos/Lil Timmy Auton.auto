@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Neutral Center Exit"
+            "pathName": "lil c v1"
           }
         },
         {
@@ -19,13 +19,25 @@
         {
           "type": "named",
           "data": {
+            "name": "Spinup"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "Shoot"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 3.0
+            "waitTime": 4.0
           }
         },
         {
@@ -37,13 +49,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Neutral Center Exit 2"
+            "pathName": "lil c v2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Spinup"
           }
         },
         {
           "type": "wait",
           "data": {
             "waitTime": 0.25
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
           }
         },
         {
@@ -55,37 +79,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 3.0
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Stop Shooting"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Neutral Center Exit 3"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.25
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 3.0
+            "waitTime": 4.0
           }
         },
         {

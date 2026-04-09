@@ -96,6 +96,11 @@ public class RobotContainer {
         break;
     }
 
+    // Hold the intake where it is
+    m_intakeRotation.setDefaultCommand(
+        Commands.run(
+            () -> m_intakeRotation.setRotation(m_intakeRotation.getRotation()), m_intakeRotation));
+
     // Declare Named Commands
     NamedCommands.registerCommand("Aim", drive.autoAim());
     NamedCommands.registerCommand(
@@ -105,8 +110,8 @@ public class RobotContainer {
         new ShooterCommand(m_shooter, () -> 5000) // 5000 for low angle
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
-        "Far Spinup2",
-        new ShooterCommand(m_shooter, () -> 5600) // 5000 for low angle
+        "Railgun",
+        new ShooterCommand(m_shooter, () -> 4200)
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
         "Mid Spinup",
@@ -118,7 +123,7 @@ public class RobotContainer {
             .alongWith(new HopperRollerCommand(m_hopperRoller, 6000)));
     NamedCommands.registerCommand("Intake", new IntakeRollerCommand(m_intakeRoller, 1));
     NamedCommands.registerCommand(
-        "Deploy Intake", new MoveIntakeToPositionCommand(m_intakeRotation, 0.38));
+        "Deploy Intake", new MoveIntakeToPositionCommand(m_intakeRotation, 15));
     NamedCommands.registerCommand(
         "Stop Shooting",
         new IndexRollerCommand(m_indexRoller, 0)
@@ -162,15 +167,14 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
-    // Right Bumper: Auto-Aim, Spin up shooter, and Index ONLY when aligned
+    // Right Bumper: Auto-Aim, Spin up shooter, and Index when aligned
     controller
         .rightBumper()
         .whileTrue(
             drive
-                .autoAimDrive(() -> controller.getLeftY(), () -> controller.getLeftX())
-                .alongWith(new ShooterCommand(m_shooter, () -> drive.getLauncherRPM()))
-                .repeatedly());
-
+                .autoAimDrive(
+                    () -> controller.getLeftY() * 0.75, () -> controller.getLeftX() * 0.75)
+                .alongWith(new ShooterCommand(m_shooter, () -> drive.getLauncherRPM())));
     // Reset gyro to 0° when B button is pressed
     controller
         .leftBumper()
@@ -186,7 +190,7 @@ public class RobotContainer {
         .x()
         .whileTrue(
             // The () -> tells the command to call this function every loop
-            new ShooterCommand(m_shooter, () -> drive.getLauncherRPM()));
+            new ShooterCommand(m_shooter, () -> 4500.0));
 
     controller
         .y()
@@ -204,9 +208,9 @@ public class RobotContainer {
 
     controller
         .b()
-        .whileTrue(
+        .onTrue(
             new IntakeRollerCommand(m_intakeRoller, 1)
-                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 0.4)));
+                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 15)));
   }
 
   /**

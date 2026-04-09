@@ -65,12 +65,12 @@ public class Drive extends SubsystemBase {
 
   static {
     // shotMap.put(Distance_Meters, Target_RPM);
-    shotMap.put(1.5, 4500.0);
-    shotMap.put(2.0, 4600.0);
-    shotMap.put(2.5, 5100.0);
-    shotMap.put(3.0, 5600.0);
-    shotMap.put(4.0, 6400.0);
-    shotMap.put(5.0, 7000.0);
+    shotMap.put(1.5, 3900.0);
+    shotMap.put(2.0, 4300.0);
+    shotMap.put(2.5, 4600.0);
+    shotMap.put(3.0, 5000.0);
+    shotMap.put(4.0, 5800.0);
+    shotMap.put(5.0, 6600.0);
   }
 
   private static final InterpolatingDoubleTreeMap TOFMap = new InterpolatingDoubleTreeMap();
@@ -227,9 +227,6 @@ public class Drive extends SubsystemBase {
           rejectUpdate = true;
         }
         if (yawVelocity > Units.degreesToRadians(360)) {
-          rejectUpdate = true;
-        }
-        if (DriverStation.isAutonomous() && distToTag >= 2.5) {
           rejectUpdate = true;
         }
         if (!rejectUpdate) {
@@ -437,13 +434,7 @@ public class Drive extends SubsystemBase {
   }
 
   public double getLauncherRPM() {
-    // Get the target based on Alliance
-    var alliance = DriverStation.getAlliance();
-    Translation2d blueHub = new Translation2d(4.6, 4.0);
-    Translation2d redHub = new Translation2d(16.54 - 4.6, 4.0);
-
-    Translation2d realTarget =
-        (alliance.isPresent() && alliance.get() == Alliance.Red) ? redHub : blueHub;
+    Translation2d realTarget = getTargetForZone();
 
     // Calculate Time of Flight
     double distance = getPose().getTranslation().getDistance(realTarget);
@@ -471,6 +462,44 @@ public class Drive extends SubsystemBase {
     return targetRPM;
   }
 
+  /** Determines the target translation based on alliance and robot position. */
+  private Translation2d getTargetForZone() {
+    var alliance = DriverStation.getAlliance();
+    boolean isRed = alliance.isPresent() && alliance.get() == Alliance.Red;
+
+    // Shooting Targets
+    Translation2d blueHub = new Translation2d(4.6, 4.0);
+    Translation2d redHub = new Translation2d(16.54 - 4.6, 4.0);
+    // Passing Targets
+    Translation2d bluePassingL = new Translation2d(2.5, 5.5);
+    Translation2d bluePassingR = new Translation2d(2.5, 2.5);
+    Translation2d redPassingL = new Translation2d(16.54 - 2.5, 5.5);
+    Translation2d redPassingR = new Translation2d(16.54 - 2.5, 2.5);
+
+    double robotX = getPose().getX();
+    double robotY = getPose().getY();
+
+    if (isRed) {
+      // Zone Logic for Red Alliance
+      if (robotX > (16.54 - 5.25)) {
+        return redHub;
+      } else if (robotY > 4) {
+        return redPassingL;
+      } else {
+        return redPassingR;
+      }
+    } else {
+      // Zone Logic for Blue Alliance
+      if (robotX < 5.25) {
+        return blueHub;
+      } else if (robotY > 4) {
+        return bluePassingL;
+      } else {
+        return bluePassingR;
+      }
+    }
+  }
+
   public Command autoAimDrive(DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
 
     // Setup PID for rotation
@@ -480,13 +509,7 @@ public class Drive extends SubsystemBase {
 
     return run(
         () -> {
-          // Get the target based on Alliance
-          var alliance = DriverStation.getAlliance();
-          Translation2d blueHub = new Translation2d(4.6, 4.0);
-          Translation2d redHub = new Translation2d(16.54 - 4.6, 4.0);
-
-          Translation2d realTarget =
-              (alliance.isPresent() && alliance.get() == Alliance.Red) ? redHub : blueHub;
+          Translation2d realTarget = getTargetForZone();
 
           // Calculate Time of Flight
           double distance = getPose().getTranslation().getDistance(realTarget);
@@ -500,7 +523,7 @@ public class Drive extends SubsystemBase {
                   realTarget.getX() - (fieldSpeeds.vxMetersPerSecond * timeOfFlight),
                   realTarget.getY() - (fieldSpeeds.vyMetersPerSecond * timeOfFlight));
 
-          // Aim at the VIRTUAL target instead of the real one
+          // Aim at the virtual target instead of the real one
           Translation2d currentTranslation = getPose().getTranslation();
           Translation2d delta = virtualTarget.minus(currentTranslation);
           Rotation2d angleToTarget = new Rotation2d(delta.getX(), delta.getY());

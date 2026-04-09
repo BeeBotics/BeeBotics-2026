@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.3,
-        "y": 2.56
+        "x": 3.107475035663337,
+        "y": 2.4111982881597713
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.181383737517831,
-        "y": 2.372382310984309
+        "x": 3.9888587731811693,
+        "y": 2.2235805991440802
       },
       "isLocked": false,
       "linkedName": null
@@ -48,12 +48,12 @@
     },
     {
       "anchor": {
-        "x": 3.3,
-        "y": 5.1
+        "x": 2.9263338088445074,
+        "y": 5.412967189728959
       },
       "prevControl": {
-        "x": 4.425663338088446,
-        "y": 5.565791726105563
+        "x": 4.051997146932954,
+        "y": 5.878758915834522
       },
       "nextControl": null,
       "isLocked": false,
@@ -70,6 +70,17 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
+      "name": "Railgun",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Railgun"
+        }
+      }
+    },
+    {
       "name": "Intake",
       "waypointRelativePos": 0.8426738690074216,
       "endWaypointRelativePos": null,
@@ -84,7 +95,12 @@
       "name": "Stop Intake",
       "waypointRelativePos": 2.3497636731937717,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Stop Intake"
+        }
+      }
     }
   ],
   "globalConstraints": {

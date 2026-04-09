@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ShooterSubsystem;
 import java.util.function.DoubleSupplier;
@@ -25,7 +26,6 @@ public class ShooterCommand extends Command {
 
   @Override
   public boolean isFinished() {
-    // This command will end once the shooter is above a certian speed
-    return m_shooter.getRPM() - rpmSupplier.getAsDouble() > 3500;
+    return DriverStation.isAutonomous();
   }
 }

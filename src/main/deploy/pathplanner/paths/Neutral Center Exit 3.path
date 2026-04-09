@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.3,
-        "y": 5.1
+        "x": 3.133352353780314,
+        "y": 5.16713266761769
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.207261055634806,
-        "y": 5.788188302425108
+        "x": 4.04061340941512,
+        "y": 5.855320970042798
       },
       "isLocked": false,
       "linkedName": null
@@ -32,28 +32,28 @@
     },
     {
       "anchor": {
-        "x": 6.80793152639087,
-        "y": 2.42413694721826
+        "x": 6.691483594864478,
+        "y": 2.592339514978602
       },
       "prevControl": {
-        "x": 7.688439092260158,
-        "y": 2.232722258985807
+        "x": 7.571991160733766,
+        "y": 2.4009248267461487
       },
       "nextControl": {
-        "x": 5.915164051355206,
-        "y": 2.6182168330955777
+        "x": 5.798716119828814,
+        "y": 2.7864194008559195
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.3,
-        "y": 2.644094151212554
+        "x": 2.8616405135520675,
+        "y": 2.592339514978602
       },
       "prevControl": {
-        "x": 4.826761768901569,
-        "y": 2.4629529243937247
+        "x": 4.388402282453638,
+        "y": 2.4111982881597727
       },
       "nextControl": null,
       "isLocked": false,
@@ -90,6 +90,17 @@
           "name": "Stop Intake"
         }
       }
+    },
+    {
+      "name": "Railgun",
+      "waypointRelativePos": 2.3902768399729712,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Railgun"
+        }
+      }
     }
   ],
   "globalConstraints": {
@@ -102,7 +113,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -135.0
+    "rotation": -145.88552705465878
   },
   "reversed": false,
   "folder": "Neutral Center Paths",

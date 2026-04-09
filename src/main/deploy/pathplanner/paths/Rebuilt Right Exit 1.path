@@ -1,0 +1,183 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 4.453095577746077,
+        "y": 0.5480313837375184
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.511507396112774,
+        "y": 0.7063845660748193
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.002011412268189,
+        "y": 0.8714978601997154
+      },
+      "prevControl": {
+        "x": 5.754695746283668,
+        "y": 0.6327354644512131
+      },
+      "nextControl": {
+        "x": 7.247553310884666,
+        "y": 0.9184997327561958
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.7653922967189715,
+        "y": 1.2337803138373749
+      },
+      "prevControl": {
+        "x": 7.521757694282358,
+        "y": 0.9664596553790498
+      },
+      "nextControl": {
+        "x": 8.074696063071507,
+        "y": 1.5731544653662457
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.7653922967189715,
+        "y": 3.4462910128388025
+      },
+      "prevControl": {
+        "x": 7.884392124881368,
+        "y": 4.175164960333493
+      },
+      "nextControl": {
+        "x": 7.66188302425107,
+        "y": 2.8122967189728967
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.939,
+        "y": 2.334
+      },
+      "prevControl": {
+        "x": 4.841255349500712,
+        "y": 2.7734807417974334
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.9104477611940447,
+      "rotationDegrees": 90.0
+    },
+    {
+      "waypointRelativePos": 3.1897654584221717,
+      "rotationDegrees": 90.0
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 1.933828494260619,
+      "maxWaypointRelativePos": 3.3923024983119423,
+      "constraints": {
+        "maxVelocity": 2.5,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    },
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 3.565158676569878,
+      "maxWaypointRelativePos": 3.889264010803514,
+      "constraints": {
+        "maxVelocity": 2.0,
+        "maxAcceleration": 4.8,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "Deploy Intake",
+      "waypointRelativePos": 0.0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Deploy Intake"
+        }
+      }
+    },
+    {
+      "name": "Intake",
+      "waypointRelativePos": 1.2099932478055437,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Intake"
+        }
+      }
+    },
+    {
+      "name": "Mid Spinup",
+      "waypointRelativePos": 3.46792707629974,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Mid Spinup"
+        }
+      }
+    },
+    {
+      "name": "Stop Intake",
+      "waypointRelativePos": 3.8244429439567664,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Stop Intake"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 4.8,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -140.0
+  },
+  "reversed": false,
+  "folder": "Rebuilt Right",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": false
+}

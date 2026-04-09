@@ -7,13 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Neutral Center Exit"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.25
+            "pathName": "the U turn "
           }
         },
         {
@@ -25,7 +19,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 3.0
+            "waitTime": 4.0
           }
         },
         {
@@ -37,13 +31,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Neutral Center Exit 2"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.25
+            "pathName": "THE CLAW"
           }
         },
         {
@@ -55,37 +43,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 3.0
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Stop Shooting"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Neutral Center Exit 3"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.25
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 3.0
+            "waitTime": 4.0
           }
         },
         {
