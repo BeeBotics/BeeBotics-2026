@@ -20,7 +20,7 @@ public class ShooterSubsystem extends SubsystemBase {
   private SparkClosedLoopController flywheelController =
       leadingShooterMotor.getClosedLoopController();
 
-  private final RelativeEncoder leadingShooterEncoder;
+  private final RelativeEncoder leadingShooterEncoder = leadingShooterMotor.getEncoder();
 
   public ShooterSubsystem() {
 
@@ -58,8 +58,6 @@ public class ShooterSubsystem extends SubsystemBase {
         followingMotorConfigR, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     followingShooterMotorL.configure(
         followingMotorConfigL, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    leadingShooterEncoder = leadingShooterMotor.getEncoder();
   }
 
   public void setTargetVelocity(double targetRPM) {

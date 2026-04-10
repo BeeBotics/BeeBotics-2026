@@ -66,11 +66,11 @@ public class Drive extends SubsystemBase {
   static {
     // shotMap.put(Distance_Meters, Target_RPM);
     shotMap.put(1.5, 3900.0);
-    shotMap.put(2.0, 4300.0);
+    shotMap.put(2.0, 4200.0);
     shotMap.put(2.5, 4600.0);
     shotMap.put(3.0, 5000.0);
-    shotMap.put(4.0, 5800.0);
-    shotMap.put(5.0, 6600.0);
+    shotMap.put(4.0, 5600.0);
+    shotMap.put(5.0, 6400.0);
   }
 
   private static final InterpolatingDoubleTreeMap TOFMap = new InterpolatingDoubleTreeMap();
@@ -397,42 +397,6 @@ public class Drive extends SubsystemBase {
     return maxSpeedMetersPerSec / driveBaseRadius;
   }
 
-  public Command autoAim() {
-    PIDController thetaController = new PIDController(4.5, 0, 0); // Match your teleop gains
-    thetaController.enableContinuousInput(-Math.PI, Math.PI);
-
-    return run(
-        () -> {
-          // Get the current translation speeds from PathPlanner's active setpoint
-          ChassisSpeeds desiredSpeeds = getChassisSpeeds();
-
-          // Get the target (Blue/Red Hub)
-          var alliance = DriverStation.getAlliance();
-          Translation2d target =
-              (alliance.isPresent() && alliance.get() == Alliance.Red)
-                  ? new Translation2d(16.54 - 4.6, 4.0)
-                  : new Translation2d(4.6, 4.0);
-
-          // Calculate target rotation
-          Translation2d currentTranslation = getPose().getTranslation();
-          Translation2d delta = target.minus(currentTranslation);
-          Rotation2d angleToTarget = new Rotation2d(delta.getX(), delta.getY());
-
-          Rotation2d targetRotation = angleToTarget.plus(Rotation2d.fromRadians(Math.PI));
-
-          // Calculate PID output for rotation
-          double rotationOutput =
-              thetaController.calculate(
-                  getPose().getRotation().getRadians(), targetRotation.getRadians());
-          // Drive
-          runVelocity(
-              new ChassisSpeeds(
-                  desiredSpeeds.vxMetersPerSecond,
-                  desiredSpeeds.vyMetersPerSecond,
-                  rotationOutput));
-        });
-  }
-
   public double getLauncherRPM() {
     Translation2d realTarget = getTargetForZone();
 
@@ -471,10 +435,10 @@ public class Drive extends SubsystemBase {
     Translation2d blueHub = new Translation2d(4.6, 4.0);
     Translation2d redHub = new Translation2d(16.54 - 4.6, 4.0);
     // Passing Targets
-    Translation2d bluePassingL = new Translation2d(2.5, 5.5);
-    Translation2d bluePassingR = new Translation2d(2.5, 2.5);
-    Translation2d redPassingL = new Translation2d(16.54 - 2.5, 5.5);
-    Translation2d redPassingR = new Translation2d(16.54 - 2.5, 2.5);
+    Translation2d bluePassingL = new Translation2d(0.5, 5.5);
+    Translation2d bluePassingR = new Translation2d(0.5, 2.5);
+    Translation2d redPassingL = new Translation2d(16.54 - 0.5, 5.5);
+    Translation2d redPassingR = new Translation2d(16.54 - 0.5, 2.5);
 
     double robotX = getPose().getX();
     double robotY = getPose().getY();
@@ -535,9 +499,18 @@ public class Drive extends SubsystemBase {
                   getPose().getRotation().getRadians(), targetRotation.getRadians());
 
           // Drive
-          runVelocity(
+          var alliance = DriverStation.getAlliance();
+          boolean isRed = alliance.isPresent() && alliance.get() == Alliance.Red;
+          if(isRed) {
+            runVelocity(
               ChassisSpeeds.fromFieldRelativeSpeeds(
                   xSupplier.getAsDouble(), ySupplier.getAsDouble(), rotationOutput, getRotation()));
+          } else {
+            runVelocity(
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  -xSupplier.getAsDouble(), -ySupplier.getAsDouble(), rotationOutput, getRotation()));
+          }
+
 
           // Log for AdvantageScope/SmartDashboard
           Logger.recordOutput("Drive/VirtualTarget", virtualTarget);

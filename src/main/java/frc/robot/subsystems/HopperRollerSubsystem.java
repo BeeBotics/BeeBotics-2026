@@ -24,7 +24,7 @@ public class HopperRollerSubsystem extends SubsystemBase {
         .idleMode(IdleMode.kCoast)
         .inverted(false)
         .closedLoop
-        .p(0.0003)
+        .p(0.0002)
         .i(0)
         .d(0)
         .maxMotion

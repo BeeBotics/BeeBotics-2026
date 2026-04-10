@@ -16,31 +16,31 @@
     },
     {
       "anchor": {
-        "x": 7.23490727532097,
-        "y": 4.559015691868759
+        "x": 6.471526390870184,
+        "y": 4.973052781740371
       },
       "prevControl": {
-        "x": 7.085541451654663,
-        "y": 6.015332472615264
+        "x": 6.322160567203877,
+        "y": 6.429369562486876
       },
       "nextControl": {
-        "x": 7.3384165477888725,
-        "y": 3.5498002853067057
+        "x": 6.575035663338086,
+        "y": 3.9638373751783176
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.691483594864478,
+        "x": 5.52700427960057,
         "y": 2.592339514978602
       },
       "prevControl": {
-        "x": 7.571991160733766,
+        "x": 6.407511845469858,
         "y": 2.4009248267461487
       },
       "nextControl": {
-        "x": 5.798716119828814,
+        "x": 4.634236804564906,
         "y": 2.7864194008559195
       },
       "isLocked": false,
@@ -66,7 +66,34 @@
       "rotationDegrees": -90.0
     }
   ],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.7616475354490213,
+      "maxWaypointRelativePos": 1.9284267386900742,
+      "constraints": {
+        "maxVelocity": 3.0,
+        "maxAcceleration": 4.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    },
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 2.3983794733288284,
+      "maxWaypointRelativePos": 2.8116137744767036,
+      "constraints": {
+        "maxVelocity": 2.5,
+        "maxAcceleration": 4.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
@@ -113,7 +140,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -145.88552705465878
+    "rotation": -144.46232220802557
   },
   "reversed": false,
   "folder": "Neutral Center Paths",

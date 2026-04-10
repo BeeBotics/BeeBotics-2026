@@ -12,19 +12,20 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IntakeRollerSubsystem extends SubsystemBase {
   private final SparkMax intakeMotor = new SparkMax(15, MotorType.kBrushless);
-  ;
 
-  private final RelativeEncoder encoder;
+  private final RelativeEncoder encoder = intakeMotor.getEncoder();
 
   public IntakeRollerSubsystem() {
     SparkMaxConfig motorConfig = new SparkMaxConfig();
 
-    motorConfig.smartCurrentLimit(80).idleMode(IdleMode.kCoast).inverted(true);
+    motorConfig
+        .smartCurrentLimit(80)
+        .secondaryCurrentLimit(60)
+        .idleMode(IdleMode.kCoast)
+        .inverted(true);
 
     intakeMotor.configure(
         motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    encoder = intakeMotor.getEncoder();
   }
 
   public double getSpeed() {

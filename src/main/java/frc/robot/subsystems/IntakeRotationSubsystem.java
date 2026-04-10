@@ -19,7 +19,8 @@ public class IntakeRotationSubsystem extends SubsystemBase {
   private final SparkMax followingRotationMotor = new SparkMax(11, MotorType.kBrushless);
   ;
 
-  private final RelativeEncoder leadingRotationEncoder;
+  private final RelativeEncoder leadingRotationEncoder = leadingRotationMotor.getEncoder();
+  ;
 
   private SparkClosedLoopController rotationController =
       leadingRotationMotor.getClosedLoopController();
@@ -51,8 +52,6 @@ public class IntakeRotationSubsystem extends SubsystemBase {
         leadingMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     followingRotationMotor.configure(
         followingMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    leadingRotationEncoder = leadingRotationMotor.getEncoder();
   }
 
   // Returns arm Rotation

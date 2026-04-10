@@ -33,27 +33,27 @@
     {
       "anchor": {
         "x": 7.61433734940322,
-        "y": 4.42962910128388
+        "y": 3.148701854493581
       },
       "prevControl": {
         "x": 7.60115946443644,
-        "y": 4.045915014713968
+        "y": 2.7649877679236687
       },
       "nextControl": {
         "x": 7.66188302425107,
-        "y": 5.814065620542083
+        "y": 4.5331383737517825
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.072,
-        "y": 5.529
+        "x": 2.3958487874465044,
+        "y": 2.450014265335236
       },
       "prevControl": {
-        "x": 4.517369001834514,
-        "y": 5.009220772955602
+        "x": 5.462310984308131,
+        "y": 1.8677746077032813
       },
       "nextControl": null,
       "isLocked": false,
@@ -70,8 +70,16 @@
       "rotationDegrees": 90.0
     },
     {
-      "waypointRelativePos": 2.7249466950959422,
+      "waypointRelativePos": 2.0660980810234397,
       "rotationDegrees": 90.0
+    },
+    {
+      "waypointRelativePos": 2.4307036247334564,
+      "rotationDegrees": 180.0
+    },
+    {
+      "waypointRelativePos": 2.8400852878464833,
+      "rotationDegrees": 180.0
     },
     {
       "waypointRelativePos": 3,
@@ -101,8 +109,8 @@
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 2.519918973666443,
-      "maxWaypointRelativePos": 2.8197164078325434,
+      "minWaypointRelativePos": 2.6414584740040676,
+      "maxWaypointRelativePos": 2.8278190411883863,
       "constraints": {
         "maxVelocity": 2.0,
         "maxAcceleration": 3.0,
@@ -159,7 +167,7 @@
   },
   "goalEndState": {
     "velocity": 0.0,
-    "rotation": 144.0
+    "rotation": -140.82634202955572
   },
   "reversed": false,
   "folder": "Lil C Paths",

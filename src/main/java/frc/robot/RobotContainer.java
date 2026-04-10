@@ -102,7 +102,6 @@ public class RobotContainer {
             () -> m_intakeRotation.setRotation(m_intakeRotation.getRotation()), m_intakeRotation));
 
     // Declare Named Commands
-    NamedCommands.registerCommand("Aim", drive.autoAim());
     NamedCommands.registerCommand(
         "Spinup", new ShooterCommand(m_shooter, () -> drive.getLauncherRPM()));
     NamedCommands.registerCommand(
@@ -174,7 +173,9 @@ public class RobotContainer {
             drive
                 .autoAimDrive(
                     () -> controller.getLeftY() * 0.75, () -> controller.getLeftX() * 0.75)
-                .alongWith(new ShooterCommand(m_shooter, () -> drive.getLauncherRPM())));
+                .alongWith(new ShooterCommand(m_shooter, () -> drive.getLauncherRPM()))
+                .alongWith(new IntakeRollerCommand(m_intakeRoller, 0.8)));
+
     // Reset gyro to 0° when B button is pressed
     controller
         .leftBumper()
@@ -190,7 +191,7 @@ public class RobotContainer {
         .x()
         .whileTrue(
             // The () -> tells the command to call this function every loop
-            new ShooterCommand(m_shooter, () -> 4500.0));
+            new ShooterCommand(m_shooter, () -> 5800.0));
 
     controller
         .y()
