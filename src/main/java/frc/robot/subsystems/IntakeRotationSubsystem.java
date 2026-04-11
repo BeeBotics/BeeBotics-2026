@@ -30,11 +30,11 @@ public class IntakeRotationSubsystem extends SubsystemBase {
     SparkMaxConfig followingMotorConfig = new SparkMaxConfig();
 
     leadingMotorConfig
-        .smartCurrentLimit(70)
+        .smartCurrentLimit(80)
         .idleMode(IdleMode.kBrake)
         .inverted(true)
         .closedLoop
-        .p(3.25)
+        .p(4.5)
         .i(0)
         .d(0)
         .maxMotion
@@ -43,7 +43,7 @@ public class IntakeRotationSubsystem extends SubsystemBase {
         .allowedProfileError(0.1);
 
     followingMotorConfig
-        .smartCurrentLimit(70)
+        .smartCurrentLimit(80)
         .idleMode(IdleMode.kBrake)
         .inverted(false)
         .follow(leadingRotationMotor, true);

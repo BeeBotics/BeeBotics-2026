@@ -66,10 +66,10 @@ public class Drive extends SubsystemBase {
   static {
     // shotMap.put(Distance_Meters, Target_RPM);
     shotMap.put(1.5, 3900.0);
-    shotMap.put(2.0, 4200.0);
-    shotMap.put(2.5, 4600.0);
-    shotMap.put(3.0, 5000.0);
-    shotMap.put(4.0, 5600.0);
+    shotMap.put(2.0, 4300.0);
+    shotMap.put(2.5, 4800.0);
+    shotMap.put(3.0, 5200.0);
+    shotMap.put(4.0, 5900.0);
     shotMap.put(5.0, 6400.0);
   }
 
@@ -77,12 +77,12 @@ public class Drive extends SubsystemBase {
 
   static {
     // shotMap.put(Distance_Meters, Target_RPM);
-    TOFMap.put(1.5, 0.7);
-    TOFMap.put(2.0, 0.9);
-    TOFMap.put(2.5, 1.1);
-    TOFMap.put(3.0, 1.3);
-    TOFMap.put(4.0, 1.5);
-    TOFMap.put(4.5, 1.7);
+    TOFMap.put(1.5, 0.9);
+    TOFMap.put(2.0, 1.1);
+    TOFMap.put(2.5, 1.3);
+    TOFMap.put(3.0, 1.5);
+    TOFMap.put(4.0, 1.7);
+    TOFMap.put(4.5, 1.9);
   }
 
   private final Alert gyroDisconnectedAlert =
@@ -501,16 +501,21 @@ public class Drive extends SubsystemBase {
           // Drive
           var alliance = DriverStation.getAlliance();
           boolean isRed = alliance.isPresent() && alliance.get() == Alliance.Red;
-          if(isRed) {
+          if (isRed) {
             runVelocity(
-              ChassisSpeeds.fromFieldRelativeSpeeds(
-                  xSupplier.getAsDouble(), ySupplier.getAsDouble(), rotationOutput, getRotation()));
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                    xSupplier.getAsDouble(),
+                    ySupplier.getAsDouble(),
+                    rotationOutput,
+                    getRotation()));
           } else {
             runVelocity(
-              ChassisSpeeds.fromFieldRelativeSpeeds(
-                  -xSupplier.getAsDouble(), -ySupplier.getAsDouble(), rotationOutput, getRotation()));
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                    -xSupplier.getAsDouble(),
+                    -ySupplier.getAsDouble(),
+                    rotationOutput,
+                    getRotation()));
           }
-
 
           // Log for AdvantageScope/SmartDashboard
           Logger.recordOutput("Drive/VirtualTarget", virtualTarget);

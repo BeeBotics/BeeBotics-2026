@@ -119,17 +119,6 @@
       }
     },
     {
-      "name": "Stop Intake",
-      "waypointRelativePos": 2.57663740715731,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "Stop Intake"
-        }
-      }
-    },
-    {
       "name": "Railgun",
       "waypointRelativePos": 2.576637407157327,
       "endWaypointRelativePos": null,
@@ -137,6 +126,17 @@
         "type": "named",
         "data": {
           "name": "Railgun"
+        }
+      }
+    },
+    {
+      "name": "Stop Intake",
+      "waypointRelativePos": 2.76299797434165,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Stop Intake"
         }
       }
     }

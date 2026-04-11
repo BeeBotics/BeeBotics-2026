@@ -48,16 +48,16 @@
     },
     {
       "anchor": {
-        "x": 6.3795060240963855,
-        "y": 3.390265060240964
+        "x": 6.1480599144079875,
+        "y": 3.329843081312412
       },
       "prevControl": {
-        "x": 7.040827389443652,
-        "y": 3.39453637660485
+        "x": 6.792949556549528,
+        "y": 3.183277253552973
       },
       "nextControl": {
-        "x": 5.952075186386939,
-        "y": 3.38750438679655
+        "x": 5.863409415121255,
+        "y": 3.39453637660485
       },
       "isLocked": false,
       "linkedName": null
@@ -168,7 +168,7 @@
     },
     {
       "name": "Stop Intake",
-      "waypointRelativePos": 4.0243079000675035,
+      "waypointRelativePos": 4.33490884537476,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -188,7 +188,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 133.1604372593364
+    "rotation": 140.0
   },
   "reversed": false,
   "folder": "Ian's Auto",

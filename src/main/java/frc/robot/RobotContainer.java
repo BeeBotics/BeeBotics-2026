@@ -166,15 +166,13 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
-    // Right Bumper: Auto-Aim, Spin up shooter, and Index when aligned
+    // Right Bumper: Auto-Aim and Spin up shooter
     controller
         .rightBumper()
         .whileTrue(
             drive
-                .autoAimDrive(
-                    () -> controller.getLeftY() * 0.75, () -> controller.getLeftX() * 0.75)
-                .alongWith(new ShooterCommand(m_shooter, () -> drive.getLauncherRPM()))
-                .alongWith(new IntakeRollerCommand(m_intakeRoller, 0.8)));
+                .autoAimDrive(() -> controller.getLeftY() * 0.6, () -> controller.getLeftX() * 0.6)
+                .alongWith(new ShooterCommand(m_shooter, () -> drive.getLauncherRPM())));
 
     // Reset gyro to 0° when B button is pressed
     controller
@@ -191,7 +189,7 @@ public class RobotContainer {
         .x()
         .whileTrue(
             // The () -> tells the command to call this function every loop
-            new ShooterCommand(m_shooter, () -> 5800.0));
+            new ShooterCommand(m_shooter, () -> 4800.0));
 
     controller
         .y()
@@ -211,7 +209,15 @@ public class RobotContainer {
         .b()
         .onTrue(
             new IntakeRollerCommand(m_intakeRoller, 1)
-                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 15)));
+                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 15.45)));
+
+    controller
+        .start()
+        .onTrue(
+            new IntakeRollerCommand(m_intakeRoller, -1)
+                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 15.45))
+                .alongWith(new HopperRollerCommand(m_hopperRoller, -6000))
+                .alongWith(new IndexRollerCommand(m_indexRoller, -4000)));
   }
 
   /**
