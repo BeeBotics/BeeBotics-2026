@@ -34,12 +34,12 @@ public class IntakeRotationSubsystem extends SubsystemBase {
         .idleMode(IdleMode.kBrake)
         .inverted(true)
         .closedLoop
-        .p(4.5)
+        .p(4.25)
         .i(0)
         .d(0)
         .maxMotion
-        .cruiseVelocity(4000)
-        .maxAcceleration(6000)
+        .cruiseVelocity(5000)
+        .maxAcceleration(7000)
         .allowedProfileError(0.1);
 
     followingMotorConfig

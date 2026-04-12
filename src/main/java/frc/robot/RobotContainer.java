@@ -216,7 +216,7 @@ public class RobotContainer {
         .onTrue(
             new IntakeRollerCommand(m_intakeRoller, -1)
                 .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 15.45))
-                .alongWith(new HopperRollerCommand(m_hopperRoller, -6000))
+                .alongWith(new HopperRollerCommand(m_hopperRoller, -7000))
                 .alongWith(new IndexRollerCommand(m_indexRoller, -4000)));
   }
 
