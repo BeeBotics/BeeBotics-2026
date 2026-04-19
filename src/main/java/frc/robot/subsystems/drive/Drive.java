@@ -13,6 +13,7 @@ import static frc.robot.subsystems.drive.DriveConstants.*;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
@@ -65,12 +66,12 @@ public class Drive extends SubsystemBase {
 
   static {
     // shotMap.put(Distance_Meters, Target_RPM);
-    shotMap.put(1.5, 3900.0);
-    shotMap.put(2.0, 4300.0);
-    shotMap.put(2.5, 4800.0);
-    shotMap.put(3.0, 5200.0);
-    shotMap.put(4.0, 5900.0);
-    shotMap.put(5.0, 6400.0);
+    shotMap.put(1.5, 4000.0);
+    shotMap.put(2.0, 4500.0);
+    shotMap.put(2.5, 4900.0);
+    shotMap.put(3.0, 5300.0);
+    shotMap.put(4.0, 6100.0);
+    shotMap.put(5.0, 6600.0);
   }
 
   private static final InterpolatingDoubleTreeMap TOFMap = new InterpolatingDoubleTreeMap();
@@ -213,8 +214,22 @@ public class Drive extends SubsystemBase {
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
       // Update gyro alert
       LimelightHelpers.SetRobotOrientation(
-          "", poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
-      poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
+          "limelight-main",
+          poseEstimator.getEstimatedPosition().getRotation().getDegrees(),
+          0,
+          0,
+          0,
+          0,
+          0);
+      // LimelightHelpers.SetRobotOrientation(
+      //     "limelight-side",
+      //     poseEstimator.getEstimatedPosition().getRotation().getDegrees(),
+      //     0,
+      //     0,
+      //     0,
+      //     0,
+      //     0);
+      poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-main");
 
       if (poseEstimate.tagCount > 0) {
         Pose2d visionPose = poseEstimate.pose;
@@ -396,7 +411,19 @@ public class Drive extends SubsystemBase {
   public double getMaxAngularSpeedRadPerSec() {
     return maxSpeedMetersPerSec / driveBaseRadius;
   }
-
+  /**  Drives the robot to a specific pose on the field */
+  // Make sure to setup the navigation grid and robot specs in path planner otherwise robot will break :c
+  public Command pathfindToPose(Pose2d targetPose) {
+    return AutoBuilder.pathfindToPose(
+        targetPose,
+        new PathConstraints(
+            4.0, 3.0, // Max velocity and acceleration
+            Units.degreesToRadians(360), Units.degreesToRadians(540) // Max angular velocity and acceleration
+        ),
+        0.0 // Goal end velocity
+    );
+}
+  /** Returns the launchers RPM based on the distance to target */
   public double getLauncherRPM() {
     Translation2d realTarget = getTargetForZone();
 
@@ -464,10 +491,11 @@ public class Drive extends SubsystemBase {
     }
   }
 
+  /** Rotates the robot towards the target */
   public Command autoAimDrive(DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
 
     // Setup PID for rotation
-    PIDController thetaController = new PIDController(4.0, 0, 0);
+    PIDController thetaController = new PIDController(3.0, 0, 0);
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
     thetaController.setTolerance(Units.degreesToRadians(1.0));
 
@@ -480,7 +508,6 @@ public class Drive extends SubsystemBase {
           double timeOfFlight = TOFMap.get(distance); // Needs to be tuned
 
           // Calculate Virtual Target
-          // Subtract the robot's field-relative velocity over the time of flight
           ChassisSpeeds fieldSpeeds = getFieldRelativeSpeeds();
           Translation2d virtualTarget =
               new Translation2d(

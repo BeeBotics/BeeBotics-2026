@@ -43,6 +43,14 @@ public class HopperRollerSubsystem extends SubsystemBase {
         targetRPM, ControlType.kMAXMotionVelocityControl, ClosedLoopSlot.kSlot0);
   }
 
+  public void setPower(double power) {
+    hopperMotor.set(power);
+  }
+  // Stops the index
+  public void stop() {
+    hopperMotor.stopMotor();
+  }
+
   @Override
   public void periodic() {}
 }

@@ -9,7 +9,7 @@
       "prevControl": null,
       "nextControl": {
         "x": 2.9755351589745596,
-        "y": 0.5175836835172989
+        "y": 0.5175836835172982
       },
       "isLocked": false,
       "linkedName": null
@@ -141,7 +141,7 @@
     },
     {
       "name": "Mid Spinup",
-      "waypointRelativePos": 3.651586765698846,
+      "waypointRelativePos": 3.4024813895781794,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -152,7 +152,7 @@
     },
     {
       "name": "Stop Intake",
-      "waypointRelativePos": 4.0,
+      "waypointRelativePos": 3.7518610421836365,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -164,7 +164,7 @@
   ],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 4.8,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,

@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Rebuilt Right Exit 1"
+            "pathName": "passing"
           }
         },
         {
@@ -31,7 +31,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Rebuilt Right Exit 2"
+            "pathName": "THE CLAW"
           }
         },
         {
@@ -43,19 +43,13 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 3.5
+            "waitTime": 3.0
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Stop Shooting"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Rebuilt Right Exit 3"
           }
         }
       ]

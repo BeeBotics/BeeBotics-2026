@@ -16,32 +16,32 @@
     },
     {
       "anchor": {
-        "x": 6.471526390870184,
-        "y": 4.973052781740371
+        "x": 6.173937232524963,
+        "y": 4.921298145506419
       },
       "prevControl": {
-        "x": 6.322160567203877,
-        "y": 6.429369562486876
+        "x": 6.195792654211711,
+        "y": 5.762731880446178
       },
       "nextControl": {
-        "x": 6.575035663338086,
-        "y": 3.9638373751783176
+        "x": 6.1434816364088025,
+        "y": 3.748757695034278
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.52700427960057,
+        "x": 5.721084165477888,
         "y": 2.592339514978602
       },
       "prevControl": {
-        "x": 6.407511845469858,
-        "y": 2.4009248267461487
+        "x": 6.5408027774435835,
+        "y": 2.7455301204819285
       },
       "nextControl": {
-        "x": 4.634236804564906,
-        "y": 2.7864194008559195
+        "x": 4.82301249566054,
+        "y": 2.424506137919133
       },
       "isLocked": false,
       "linkedName": null
@@ -52,8 +52,8 @@
         "y": 2.592339514978602
       },
       "prevControl": {
-        "x": 4.388402282453638,
-        "y": 2.4111982881597727
+        "x": 4.42344578313253,
+        "y": 2.4941927710843377
       },
       "nextControl": null,
       "isLocked": false,
@@ -69,21 +69,8 @@
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.7616475354490213,
-      "maxWaypointRelativePos": 1.9284267386900742,
-      "constraints": {
-        "maxVelocity": 3.0,
-        "maxAcceleration": 4.0,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
-    },
-    {
-      "name": "Constraints Zone",
-      "minWaypointRelativePos": 2.3983794733288284,
-      "maxWaypointRelativePos": 2.8116137744767036,
+      "minWaypointRelativePos": 2.105210918114156,
+      "maxWaypointRelativePos": 2.7186104218362352,
       "constraints": {
         "maxVelocity": 2.5,
         "maxAcceleration": 4.0,
@@ -108,17 +95,6 @@
       }
     },
     {
-      "name": "Stop Intake",
-      "waypointRelativePos": 2.3902768399729535,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "Stop Intake"
-        }
-      }
-    },
-    {
       "name": "Railgun",
       "waypointRelativePos": 2.3902768399729712,
       "endWaypointRelativePos": null,
@@ -126,6 +102,17 @@
         "type": "named",
         "data": {
           "name": "Railgun"
+        }
+      }
+    },
+    {
+      "name": "Stop Intake",
+      "waypointRelativePos": 3.0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Stop Intake"
         }
       }
     }

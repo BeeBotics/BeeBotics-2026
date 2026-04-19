@@ -29,7 +29,7 @@ public class ShooterSubsystem extends SubsystemBase {
     SparkMaxConfig followingMotorConfigL = new SparkMaxConfig();
 
     leadingMotorConfig
-        .smartCurrentLimit(60)
+        .smartCurrentLimit(80)
         .idleMode(IdleMode.kCoast)
         .inverted(true)
         .closedLoop
@@ -43,12 +43,12 @@ public class ShooterSubsystem extends SubsystemBase {
         .allowedProfileError(1);
 
     followingMotorConfigR
-        .smartCurrentLimit(60)
+        .smartCurrentLimit(80)
         .idleMode(IdleMode.kCoast)
         .follow(leadingShooterMotor, true);
 
     followingMotorConfigL
-        .smartCurrentLimit(60)
+        .smartCurrentLimit(80)
         .idleMode(IdleMode.kCoast)
         .follow(leadingShooterMotor, false);
 
@@ -59,10 +59,15 @@ public class ShooterSubsystem extends SubsystemBase {
     followingShooterMotorL.configure(
         followingMotorConfigL, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
-
+  // Spins the flywheel to a set velocity (RPM)
   public void setTargetVelocity(double targetRPM) {
     flywheelController.setSetpoint(
         targetRPM, ControlType.kMAXMotionVelocityControl, ClosedLoopSlot.kSlot0);
+  }
+
+  // Stops the shooter
+  public void stopShooter() {
+    leadingShooterMotor.stopMotor();
   }
 
   // Returns arm Rotation
@@ -74,5 +79,6 @@ public class ShooterSubsystem extends SubsystemBase {
   public void periodic() {
     SmartDashboard.putNumber("Speed", getRPM());
     SmartDashboard.putNumber("Shooter Voltage", leadingShooterMotor.getAppliedOutput());
+    SmartDashboard.putNumber("3rd motor voltage", followingShooterMotorL.getBusVoltage());
   }
 }

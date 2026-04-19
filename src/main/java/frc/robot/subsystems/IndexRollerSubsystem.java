@@ -24,7 +24,7 @@ public class IndexRollerSubsystem extends SubsystemBase {
     SparkMaxConfig motorConfig = new SparkMaxConfig();
 
     motorConfig
-        .smartCurrentLimit(60)
+        .smartCurrentLimit(80)
         .idleMode(IdleMode.kCoast)
         .inverted(false)
         .closedLoop
@@ -53,8 +53,12 @@ public class IndexRollerSubsystem extends SubsystemBase {
         targetRPM, ControlType.kMAXMotionVelocityControl, ClosedLoopSlot.kSlot0);
   }
 
-  public void setVelocity(double targetSpeed) {
-    indexMotor.set(targetSpeed);
+  public void setPower(double power) {
+    indexMotor.set(power);
+  }
+  // Stops the index
+  public void stop() {
+    indexMotor.stopMotor();
   }
 
   @Override

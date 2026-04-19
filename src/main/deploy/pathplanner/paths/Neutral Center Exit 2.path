@@ -63,7 +63,7 @@
   "rotationTargets": [
     {
       "waypointRelativePos": 1.0618336886993605,
-      "rotationDegrees": 90.0
+      "rotationDegrees": 68.66332838490594
     }
   ],
   "constraintZones": [
@@ -120,7 +120,7 @@
     },
     {
       "name": "Stop Intake",
-      "waypointRelativePos": 2.3497636731937717,
+      "waypointRelativePos": 2.4632005401755572,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",

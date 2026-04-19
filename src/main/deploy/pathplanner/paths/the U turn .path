@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 4.4013409415121245,
-        "y": 7.509029957203994
+        "y": 7.625477888730385
       },
       "prevControl": null,
       "nextControl": {
         "x": 5.52700427960057,
-        "y": 7.302011412268189
+        "y": 7.41845934379458
       },
       "isLocked": false,
       "linkedName": null
@@ -48,12 +48,12 @@
     },
     {
       "anchor": {
-        "x": 3.029843081312411,
-        "y": 5.425905848787448
+        "x": 3.03,
+        "y": 5.426
       },
       "prevControl": {
-        "x": 5.022396576319543,
-        "y": 6.1375320970042795
+        "x": 5.772838801711839,
+        "y": 5.619985734664765
       },
       "nextControl": null,
       "isLocked": false,
@@ -85,7 +85,7 @@
       "minWaypointRelativePos": 1.004726536124242,
       "maxWaypointRelativePos": 2.3254557731262646,
       "constraints": {
-        "maxVelocity": 1.5,
+        "maxVelocity": 3.0,
         "maxAcceleration": 4.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -151,7 +151,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 135.971
+    "rotation": 132.97459540721107
   },
   "reversed": false,
   "folder": "Ian's Auto",

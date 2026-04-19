@@ -13,8 +13,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -45,6 +47,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
+
+  private double bump = 0;
 
   private final ShooterSubsystem m_shooter = new ShooterSubsystem();
   private final IntakeRotationSubsystem m_intakeRotation = new IntakeRotationSubsystem();
@@ -106,23 +110,23 @@ public class RobotContainer {
         "Spinup", new ShooterCommand(m_shooter, () -> drive.getLauncherRPM()));
     NamedCommands.registerCommand(
         "Far Spinup",
-        new ShooterCommand(m_shooter, () -> 5000) // 5000 for low angle
+        new ShooterCommand(m_shooter, () -> 6000) // 5000 for low angle
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
         "Railgun",
-        new ShooterCommand(m_shooter, () -> 4200)
+        new ShooterCommand(m_shooter, () -> 4400)
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
         "Mid Spinup",
-        new ShooterCommand(m_shooter, () -> 4400)
+        new ShooterCommand(m_shooter, () -> 4700)
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
         "Shoot",
         new IndexRollerCommand(m_indexRoller, 7000)
-            .alongWith(new HopperRollerCommand(m_hopperRoller, 6000)));
+            .alongWith(new HopperRollerCommand(m_hopperRoller, 7000)));
     NamedCommands.registerCommand("Intake", new IntakeRollerCommand(m_intakeRoller, 1));
     NamedCommands.registerCommand(
-        "Deploy Intake", new MoveIntakeToPositionCommand(m_intakeRotation, 15));
+        "Deploy Intake", new MoveIntakeToPositionCommand(m_intakeRotation, 19.35));
     NamedCommands.registerCommand(
         "Stop Shooting",
         new IndexRollerCommand(m_indexRoller, 0)
@@ -172,7 +176,7 @@ public class RobotContainer {
         .whileTrue(
             drive
                 .autoAimDrive(() -> controller.getLeftY() * 0.6, () -> controller.getLeftX() * 0.6)
-                .alongWith(new ShooterCommand(m_shooter, () -> drive.getLauncherRPM())));
+                .alongWith(new ShooterCommand(m_shooter, () -> drive.getLauncherRPM() + bump)));
 
     // Reset gyro to 0° when B button is pressed
     controller
@@ -195,12 +199,12 @@ public class RobotContainer {
         .y()
         .whileTrue(
             new IndexRollerCommand(m_indexRoller, 8000)
-                .alongWith(new HopperRollerCommand(m_hopperRoller, 7000)));
+                .alongWith(new HopperRollerCommand(m_hopperRoller, 8000)));
 
     controller
         .a()
         .whileTrue(
-            new ShooterCommand(m_shooter, () -> 0)
+            new InstantCommand(() -> m_shooter.stopShooter(), m_shooter)
                 .alongWith(new IndexRollerCommand(m_indexRoller, 0))
                 .alongWith(new HopperRollerCommand(m_hopperRoller, 0))
                 .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
@@ -209,15 +213,26 @@ public class RobotContainer {
         .b()
         .onTrue(
             new IntakeRollerCommand(m_intakeRoller, 1)
-                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 15.45)));
+                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 19.35)));
 
     controller
         .start()
         .onTrue(
             new IntakeRollerCommand(m_intakeRoller, -1)
-                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 15.45))
+                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 19.35))
                 .alongWith(new HopperRollerCommand(m_hopperRoller, -7000))
                 .alongWith(new IndexRollerCommand(m_indexRoller, -4000)));
+
+    controller
+        .povUp()
+        .onTrue(
+            Commands.runOnce(() -> bump += 100)
+                .alongWith(Commands.runOnce(() -> SmartDashboard.putNumber("bump", bump))));
+    controller
+        .povDown()
+        .onTrue(
+            Commands.runOnce(() -> bump -= 100)
+                .alongWith(Commands.runOnce(() -> SmartDashboard.putNumber("bump", bump))));
   }
 
   /**
