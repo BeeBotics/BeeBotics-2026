@@ -9,6 +9,7 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -62,6 +63,10 @@ public class RobotContainer {
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
 
+  private final SlewRateLimiter xLimiter = new SlewRateLimiter(3.0); // Units per second
+  private final SlewRateLimiter yLimiter = new SlewRateLimiter(3.0);
+  private final SlewRateLimiter rotLimiter = new SlewRateLimiter(3.0);
+
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     switch (Constants.currentMode) {
@@ -106,6 +111,7 @@ public class RobotContainer {
             () -> m_intakeRotation.setRotation(m_intakeRotation.getRotation()), m_intakeRotation));
 
     // Declare Named Commands
+    NamedCommands.registerCommand("Aim", drive.autoAim());
     NamedCommands.registerCommand(
         "Spinup", new ShooterCommand(m_shooter, () -> drive.getLauncherRPM()));
     NamedCommands.registerCommand(
@@ -166,9 +172,9 @@ public class RobotContainer {
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> -controller.getRightX()));
+            () -> xLimiter.calculate(-controller.getLeftY()),
+            () -> yLimiter.calculate(-controller.getLeftX()),
+            () -> rotLimiter.calculate(-controller.getRightX())));
 
     // Right Bumper: Auto-Aim and Spin up shooter
     controller

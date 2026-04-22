@@ -13,6 +13,12 @@
         {
           "type": "named",
           "data": {
+            "name": "Aim"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "Shoot"
           }
         },
@@ -32,6 +38,12 @@
           "type": "path",
           "data": {
             "pathName": "THE CLAW"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Aim"
           }
         },
         {

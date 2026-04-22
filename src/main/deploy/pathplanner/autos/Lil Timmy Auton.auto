@@ -13,13 +13,19 @@
         {
           "type": "named",
           "data": {
+            "name": "Aim"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "Shoot"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 4.0
+            "waitTime": 3.0
           }
         },
         {
@@ -32,6 +38,12 @@
           "type": "path",
           "data": {
             "pathName": "lil c v2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Aim"
           }
         },
         {

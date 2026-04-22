@@ -86,6 +86,9 @@ public class Drive extends SubsystemBase {
     TOFMap.put(4.5, 1.9);
   }
 
+  // Setup PID for rotation
+  PIDController thetaController = new PIDController(4.0, 0, 0);
+
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
 
@@ -157,6 +160,8 @@ public class Drive extends SubsystemBase {
                 (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+
+    thetaController.enableContinuousInput(-Math.PI, Math.PI);
   }
 
   @Override
@@ -209,52 +214,36 @@ public class Drive extends SubsystemBase {
         Twist2d twist = kinematics.toTwist2d(moduleDeltas);
         rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
       }
-
-      // Apply update
-      poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
-      // Update gyro alert
+      
       LimelightHelpers.SetRobotOrientation(
-          "limelight-main",
-          poseEstimator.getEstimatedPosition().getRotation().getDegrees(),
-          0,
-          0,
-          0,
-          0,
-          0);
-      // LimelightHelpers.SetRobotOrientation(
-      //     "limelight-side",
-      //     poseEstimator.getEstimatedPosition().getRotation().getDegrees(),
-      //     0,
-      //     0,
-      //     0,
-      //     0,
-      //     0);
-      poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-main");
+        "limelight-main",
+        poseEstimator.getEstimatedPosition().getRotation().getDegrees(),
+        0,
+        0,
+        0,
+        0,
+        0);
+      LimelightHelpers.SetRobotOrientation(
+        "limelight-side",
+        poseEstimator.getEstimatedPosition().getRotation().getDegrees(),
+        0,
+        0,
+        0,
+        0,
+        0);
 
-      if (poseEstimate.tagCount > 0) {
-        Pose2d visionPose = poseEstimate.pose;
-        double distToTag = poseEstimate.avgTagDist;
-        double yawVelocity = Math.abs(gyroInputs.yawVelocityRadPerSec);
+      processVision(LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-main"));
+      processVision(LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-side"));
 
-        boolean rejectUpdate = false;
-
-        if (distToTag > 3.5) {
-          rejectUpdate = true;
-        }
-        if (yawVelocity > Units.degreesToRadians(360)) {
-          rejectUpdate = true;
-        }
-        if (!rejectUpdate) {
-          // // Small numbers (0.1) = Trust vision a lot. Large numbers (2.0) = Trust encoders more.
-          poseEstimator.addVisionMeasurement(
-              visionPose, poseEstimate.timestampSeconds, VecBuilder.fill(0.1, 0.1, 999999999));
-        }
-      }
       // Adding field map to smart dashboard
       field2d.setRobotPose(getPose());
       SmartDashboard.putData(field2d);
+
+      // Apply update
+      poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
     }
 
+    // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
   }
 
@@ -411,18 +400,68 @@ public class Drive extends SubsystemBase {
   public double getMaxAngularSpeedRadPerSec() {
     return maxSpeedMetersPerSec / driveBaseRadius;
   }
-  /**  Drives the robot to a specific pose on the field */
-  // Make sure to setup the navigation grid and robot specs in path planner otherwise robot will break :c
+  /** Drives the robot to a specific pose on the field */
+  // Make sure to setup the navigation grid and robot specs in path planner otherwise robot will
+  // break :c
   public Command pathfindToPose(Pose2d targetPose) {
     return AutoBuilder.pathfindToPose(
         targetPose,
         new PathConstraints(
-            4.0, 3.0, // Max velocity and acceleration
-            Units.degreesToRadians(360), Units.degreesToRadians(540) // Max angular velocity and acceleration
-        ),
+            4.0,
+            4.0, // Max velocity and acceleration
+            Units.degreesToRadians(360),
+            Units.degreesToRadians(540) // Max angular velocity and acceleration
+            ),
         0.0 // Goal end velocity
-    );
-}
+        );
+  }
+
+  private void processVision(LimelightHelpers.PoseEstimate estimate) {
+    if (estimate.tagCount > 0) {
+      double yawVelocity = Math.abs(gyroInputs.yawVelocityRadPerSec);
+
+      // Rejection Logic
+      if (estimate.avgTagDist < 3.5 && yawVelocity < Units.degreesToRadians(360)) {
+        poseEstimator.addVisionMeasurement(
+            estimate.pose, estimate.timestampSeconds, VecBuilder.fill(0.1, 0.1, 999999999));
+      }
+    }
+  }
+  /** Calculates the rotation speed required to aim at the hub. */
+  public double calculateAutoAimRotation() {
+    // Determine Target based on Alliance
+    var alliance = DriverStation.getAlliance();
+    Translation2d target =
+        (alliance.isPresent() && alliance.get() == Alliance.Red)
+            ? new Translation2d(16.54 - 4.6, 4.0)
+            : new Translation2d(4.6, 4.0);
+
+    // Calculate Angle
+    Translation2d currentTranslation = getPose().getTranslation();
+    Translation2d delta = target.minus(currentTranslation);
+    Rotation2d angleToTarget = new Rotation2d(delta.getX(), delta.getY());
+
+    // Adjust for robot orientation
+    Rotation2d targetRotation = angleToTarget.plus(Rotation2d.fromRadians(Math.PI));
+
+    // Return PID Output
+    return thetaController.calculate(
+        getPose().getRotation().getRadians(), targetRotation.getRadians());
+  }
+
+  public Command autoAim() {
+    return run(() -> {
+          double rotationOutput = calculateAutoAimRotation();
+
+          // Drive with 0 translation, only rotation
+          runVelocity(new ChassisSpeeds(0, 0, rotationOutput));
+        })
+        // Finish command once within a certian range
+        .until(() -> Math.abs(thetaController.getPositionError()) < Units.degreesToRadians(1.0))
+        // Safety timeout
+        .withTimeout(1.0)
+        .finallyDo(() -> stop());
+  }
   /** Returns the launchers RPM based on the distance to target */
   public double getLauncherRPM() {
     Translation2d realTarget = getTargetForZone();
@@ -432,7 +471,7 @@ public class Drive extends SubsystemBase {
     double timeOfFlight = TOFMap.get(distance);
 
     // Calculate Virtual Target
-    // Subtract the robot's field-relative velocity over the time of flight
+    // Subtract the robot's field-relative velocity times time of flight
     ChassisSpeeds fieldSpeeds = getFieldRelativeSpeeds();
     Translation2d virtualTarget =
         new Translation2d(
@@ -495,8 +534,6 @@ public class Drive extends SubsystemBase {
   public Command autoAimDrive(DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
 
     // Setup PID for rotation
-    PIDController thetaController = new PIDController(3.0, 0, 0);
-    thetaController.enableContinuousInput(-Math.PI, Math.PI);
     thetaController.setTolerance(Units.degreesToRadians(1.0));
 
     return run(
