@@ -95,7 +95,7 @@
     },
     {
       "waypointRelativePos": 3.530916844349681,
-      "rotationDegrees": -136.4501783578137
+      "rotationDegrees": -136.45017835781374
     }
   ],
   "constraintZones": [
@@ -130,7 +130,7 @@
   "eventMarkers": [
     {
       "name": "Intake",
-      "waypointRelativePos": 0.5185685347737902,
+      "waypointRelativePos": 0.18365968939906555,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",

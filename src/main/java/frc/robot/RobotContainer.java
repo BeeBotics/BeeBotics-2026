@@ -63,9 +63,9 @@ public class RobotContainer {
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
 
-  private final SlewRateLimiter xLimiter = new SlewRateLimiter(3.0); // Units per second
-  private final SlewRateLimiter yLimiter = new SlewRateLimiter(3.0);
-  private final SlewRateLimiter rotLimiter = new SlewRateLimiter(3.0);
+  private final SlewRateLimiter xLimiter = new SlewRateLimiter(4.0); // Units per second
+  private final SlewRateLimiter yLimiter = new SlewRateLimiter(4.0);
+  private final SlewRateLimiter rotLimiter = new SlewRateLimiter(5.0);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -105,7 +105,7 @@ public class RobotContainer {
         break;
     }
 
-    // Hold the intake where it is
+    // // Hold the intake where it is
     m_intakeRotation.setDefaultCommand(
         Commands.run(
             () -> m_intakeRotation.setRotation(m_intakeRotation.getRotation()), m_intakeRotation));
@@ -116,15 +116,15 @@ public class RobotContainer {
         "Spinup", new ShooterCommand(m_shooter, () -> drive.getLauncherRPM()));
     NamedCommands.registerCommand(
         "Far Spinup",
-        new ShooterCommand(m_shooter, () -> 6000) // 5000 for low angle
+        new ShooterCommand(m_shooter, () -> 6200) // 5000 for low angle
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
         "Railgun",
-        new ShooterCommand(m_shooter, () -> 4400)
+        new ShooterCommand(m_shooter, () -> 4600)
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
         "Mid Spinup",
-        new ShooterCommand(m_shooter, () -> 4700)
+        new ShooterCommand(m_shooter, () -> 4900)
             .alongWith(new IntakeRollerCommand(m_intakeRoller, 0)));
     NamedCommands.registerCommand(
         "Shoot",
@@ -132,7 +132,7 @@ public class RobotContainer {
             .alongWith(new HopperRollerCommand(m_hopperRoller, 7000)));
     NamedCommands.registerCommand("Intake", new IntakeRollerCommand(m_intakeRoller, 1));
     NamedCommands.registerCommand(
-        "Deploy Intake", new MoveIntakeToPositionCommand(m_intakeRotation, 19.35));
+        "Deploy Intake", new MoveIntakeToPositionCommand(m_intakeRotation, 21.2));
     NamedCommands.registerCommand(
         "Stop Shooting",
         new IndexRollerCommand(m_indexRoller, 0)
@@ -219,13 +219,13 @@ public class RobotContainer {
         .b()
         .onTrue(
             new IntakeRollerCommand(m_intakeRoller, 1)
-                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 19.35)));
+                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 21.2)));
 
     controller
         .start()
         .onTrue(
             new IntakeRollerCommand(m_intakeRoller, -1)
-                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 19.35))
+                .alongWith(new MoveIntakeToPositionCommand(m_intakeRotation, 21.2))
                 .alongWith(new HopperRollerCommand(m_hopperRoller, -7000))
                 .alongWith(new IndexRollerCommand(m_indexRoller, -4000)));
 

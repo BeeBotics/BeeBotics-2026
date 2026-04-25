@@ -3,55 +3,40 @@ package frc.robot.subsystems;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.SparkBase;
-import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IntakeRotationSubsystem extends SubsystemBase {
-  private final SparkMax leadingRotationMotor = new SparkMax(10, MotorType.kBrushless);
-  ;
-  private final SparkMax followingRotationMotor = new SparkMax(11, MotorType.kBrushless);
-  ;
+  private final SparkMax leadingRotationMotor;
+  private final SparkMax followingRotationMotor;
 
-  private final RelativeEncoder leadingRotationEncoder = leadingRotationMotor.getEncoder();
-  ;
-
-  private SparkClosedLoopController rotationController =
-      leadingRotationMotor.getClosedLoopController();
+  private final RelativeEncoder leadingRotationEncoder;
+  private final PIDController pid;
 
   public IntakeRotationSubsystem() {
+    leadingRotationMotor = new SparkMax(10, MotorType.kBrushless); // Set the correct canID
+    followingRotationMotor = new SparkMax(11, MotorType.kBrushless);
+
     SparkMaxConfig leadingMotorConfig = new SparkMaxConfig();
     SparkMaxConfig followingMotorConfig = new SparkMaxConfig();
 
-    leadingMotorConfig
-        .smartCurrentLimit(80)
-        .idleMode(IdleMode.kBrake)
-        .inverted(true)
-        .closedLoop
-        .p(4.25)
-        .i(0)
-        .d(0)
-        .maxMotion
-        .cruiseVelocity(5000)
-        .maxAcceleration(7000)
-        .allowedProfileError(0.1);
+    leadingMotorConfig.smartCurrentLimit(60).idleMode(IdleMode.kBrake).inverted(true);
 
-    followingMotorConfig
-        .smartCurrentLimit(80)
-        .idleMode(IdleMode.kBrake)
-        .inverted(false)
-        .follow(leadingRotationMotor, true);
+    followingMotorConfig.smartCurrentLimit(60).idleMode(IdleMode.kBrake).inverted(false);
 
     leadingRotationMotor.configure(
         leadingMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     followingRotationMotor.configure(
         followingMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    leadingRotationEncoder = leadingRotationMotor.getEncoder();
+
+    pid = new PIDController(0.05, 0, 0.001); // Needs tuning
   }
 
   // Returns arm Rotation
@@ -60,12 +45,26 @@ public class IntakeRotationSubsystem extends SubsystemBase {
   }
 
   public void setRotation(double targetRotation) {
-    rotationController.setSetpoint(
-        targetRotation, SparkBase.ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0);
+    double output = pid.calculate(getRotation(), targetRotation);
+    leadingRotationMotor.set(output);
+    followingRotationMotor.set(output);
+  }
+
+  public void resetRotation() {
+    leadingRotationEncoder.setPosition(0);
+  }
+
+  public void setPosition(double targetRotation) {
+    pid.setSetpoint(targetRotation);
   }
 
   @Override
   public void periodic() {
+    // This method will be called once per scheduler run
+    // Good place to update SmartDashboard values if needed
+    double pidOutput = pid.calculate(getRotation());
+    leadingRotationMotor.set(pidOutput);
+    followingRotationMotor.set(pidOutput);
     SmartDashboard.putNumber("Position", getRotation());
   }
 }

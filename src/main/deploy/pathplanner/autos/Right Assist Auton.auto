@@ -5,9 +5,15 @@
     "data": {
       "commands": [
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 3.0
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "Rebuilt Right Exit 1"
+            "pathName": "Right Assist Exit 1"
           }
         },
         {
@@ -37,7 +43,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Rebuilt Right Exit 2"
+            "pathName": "Right Assist Exit 2"
           }
         },
         {
@@ -55,19 +61,13 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.5
+            "waitTime": 3.0
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Stop Shooting"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Rebuilt Right Exit 3"
           }
         }
       ]

@@ -15,6 +15,24 @@
           "data": {
             "name": "Aim"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Spinup"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
         }
       ]
     }

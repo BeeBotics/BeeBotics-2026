@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 2.9263338088445074,
-        "y": 2.0618544935805994
+        "x": 2.913395149786019,
+        "y": 2.592339514978602
       },
       "prevControl": {
-        "x": 3.029843081312411,
-        "y": 1.8030813124108418
+        "x": 3.0169044222539227,
+        "y": 2.3335663338088444
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -109.57312583041026
+    "rotation": -105.94539590092279
   },
   "reversed": false,
   "folder": "TEST PATHS",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }

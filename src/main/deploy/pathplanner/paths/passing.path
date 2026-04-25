@@ -200,6 +200,12 @@
           "name": "Railgun"
         }
       }
+    },
+    {
+      "name": "Stop Intake",
+      "waypointRelativePos": 4.550979068197152,
+      "endWaypointRelativePos": null,
+      "command": null
     }
   ],
   "globalConstraints": {

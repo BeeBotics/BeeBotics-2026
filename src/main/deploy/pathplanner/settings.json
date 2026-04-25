@@ -3,13 +3,11 @@
   "robotLength": 0.826,
   "holonomicMode": true,
   "pathFolders": [
+    "Right Assist Paths",
     "Ian's Auto",
     "Lil C Paths",
     "Neutral Center Paths",
     "Rebuilt Right",
-    "Right Depot and HP",
-    "Skyp's Right Trench Paths",
-    "Starry Paths",
     "TEST PATHS",
     "big C passin"
   ],

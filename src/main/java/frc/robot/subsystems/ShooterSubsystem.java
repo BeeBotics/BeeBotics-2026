@@ -29,7 +29,7 @@ public class ShooterSubsystem extends SubsystemBase {
     SparkMaxConfig followingMotorConfigL = new SparkMaxConfig();
 
     leadingMotorConfig
-        .smartCurrentLimit(60)
+        .smartCurrentLimit(80)
         .idleMode(IdleMode.kCoast)
         .inverted(true)
         .closedLoop
@@ -48,7 +48,7 @@ public class ShooterSubsystem extends SubsystemBase {
         .follow(leadingShooterMotor, true);
 
     followingMotorConfigL
-        .smartCurrentLimit(60)
+        .smartCurrentLimit(80)
         .idleMode(IdleMode.kCoast)
         .follow(leadingShooterMotor, false);
 

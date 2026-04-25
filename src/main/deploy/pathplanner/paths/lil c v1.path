@@ -139,7 +139,7 @@
     },
     {
       "name": "Stop Intake",
-      "waypointRelativePos": 2.787305874409178,
+      "waypointRelativePos": 2.852126941255909,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
